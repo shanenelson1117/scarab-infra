@@ -369,8 +369,27 @@ def build_scarab_binary(user, scarab_path, scarab_build, docker_home, docker_pre
 
     scarab_bin = f"{scarab_path}/src/build/{scarab_build}/scarab"
     info(f"Scarab binary at '{scarab_bin}', building it first, please wait...", dbg_lvl)
-    docker_container_name = f"{docker_prefix}_{user}_scarab_build"
+    docker_container_name = f"{docker_prefix}_{user}_scarab_build_{os.getpid()}"
+
+    def _cleanup_build_container():
+        # Best effort: stale/root-owned containers should not block build flow.
+        cleanup_result = subprocess.run(
+            ["docker", "rm", "-f", f"{docker_container_name}"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if cleanup_result.returncode != 0:
+            stderr = (cleanup_result.stderr or "").strip()
+            if "No such container" not in stderr:
+                note(
+                    f"Skipping cleanup for container '{docker_container_name}': {stderr}",
+                    dbg_lvl,
+                )
+
     try:
+        # Pre-clean to avoid name collisions with stale containers.
+        _cleanup_build_container()
         subprocess.run(
                 ["docker", "run", "-e", f"user_id={local_uid}",
                  "-e", f"group_id={local_gid}",
@@ -428,7 +447,7 @@ def build_scarab_binary(user, scarab_path, scarab_build, docker_home, docker_pre
         exception = e
     finally:
         # Always clean up build container
-        subprocess.run(["docker", "rm", "-f", f"{docker_container_name}"], check=True, capture_output=True, text=True)
+        _cleanup_build_container()
 
     if exception != None:
         raise exception
