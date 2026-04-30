@@ -81,13 +81,13 @@
   "_configurations":"scarab configurations to sweep. slurm_options passes extra arguments to sbatch (ignored for manual runner); '--mem' is no longer needed here as memory is scheduled per-simpoint automatically. memory_overhead_mb (optional, default 0) adds a fixed MB overhead on top of the per-simpoint base memory for configs that allocate extra Scarab structures. Options: https://slurm.schedmd.com/sbatch.html",
   "configurations":{
     "perfect_l1d":{
-      "params":"--perfect_dcache true",
+      "params":"--perfect_dcache 1",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
     },
     "actual":{
-      "params":"--perfect_dcache false",
+      "params":"--perfect_dcache 0",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
