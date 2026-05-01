@@ -22,57 +22,185 @@
   "_simulations":"A list of [suite, subsuite, workload, simpoint's cluster #, simulation type, warmup]. Available suite, subsuite, workloads, and each workload's available cluster_id and simulation_type are found in workloads/workloads_db.json. It runs all the simpoints if cluster_id is null and simulation type is one of 'exec', 'memtrace', 'pt'. When only 'suite' or 'suite'+'subsuite' is given and the rest are null, it launches simulations for all the workloads, all the simpoints if available, and in prioritized_mode (simulation type) in workloads/workloads_db.json. warmup can be null or smaller than the warmup of the trace available in workloads/workloads_db.json. The 'workload' field can also be a list of strings (e.g. ['gcc_r', 'mcf_r']) to run multiple specific workloads in a single entry, or an empty list [] to run all workloads (same as null).",
   "simulations":[
     {
-      "suite":"datacenter",
-      "subsuite":"datacenter",
-      "workload":"clang",
+      "suite":"spec2017",
+      "subsuite":"rate_int_v2",
+      "workload":"deepsjeng_r",
       "cluster_id":null,
       "simulation_type":null,
       "warmup":null
     },
     {
-      "suite":"datacenter",
-      "subsuite":"datacenter",
-      "workload":"gcc",
+      "suite":"spec2017",
+      "subsuite":"rate_int_v2",
+      "workload":"exchange2_r",
       "cluster_id":null,
       "simulation_type":null,
       "warmup":null
     },
     {
-      "suite":"datacenter",
-      "subsuite":"datacenter",
-      "workload":"mongodb",
+      "suite":"spec2017",
+      "subsuite":"rate_int_v2",
+      "workload":"gcc_r",
       "cluster_id":null,
       "simulation_type":null,
       "warmup":null
     },
     {
-      "suite":"datacenter",
-      "subsuite":"datacenter",
-      "workload":"mysql",
+      "suite":"spec2017",
+      "subsuite":"rate_int_v2",
+      "workload":"perlbench_r",
       "cluster_id":null,
       "simulation_type":null,
       "warmup":null
     },
     {
-      "suite":"datacenter",
-      "subsuite":"datacenter",
-      "workload":"postgres",
+      "suite":"spec2017",
+      "subsuite":"rate_int_v2",
+      "workload":"perlbench_r_2",
       "cluster_id":null,
       "simulation_type":null,
       "warmup":null
     },
     {
-      "suite":"datacenter",
-      "subsuite":"datacenter",
-      "workload":"verilator",
+      "suite":"spec2017",
+      "subsuite":"rate_int_v2",
+      "workload":"x264_r",
       "cluster_id":null,
       "simulation_type":null,
       "warmup":null
     },
     {
-      "suite":"datacenter",
-      "subsuite":"datacenter",
-      "workload":"xgboost",
+      "suite":"spec2017",
+      "subsuite":"rate_int_v2",
+      "workload":"x264_r_2",
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2017",
+      "subsuite":"rate_int_v2",
+      "workload":"xalancbmk_r",
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2017",
+      "subsuite":"rate_int_v2",
+      "workload":"xz_r",
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2017",
+      "subsuite":"rate_int_v2",
+      "workload":"leela_r",
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2017",
+      "subsuite":"rate_int_v2",
+      "workload":"mcf_r",
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2017",
+      "subsuite":"rate_int_v2",
+      "workload":"gcc_r_2",
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2017",
+      "subsuite":"rate_int_v2",
+      "workload":"omnetpp_r",
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2017",
+      "subsuite":"rate_fp_v2",
+      "workload":"blender_r",
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2017",
+      "subsuite":"rate_fp_v2",
+      "workload":"bwaves_r",
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2017",
+      "subsuite":"rate_fp_v2",
+      "workload":"cactuBSSN_r",
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2017",
+      "subsuite":"rate_fp_v2",
+      "workload":"cam4_r",
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2017",
+      "subsuite":"rate_fp_v2",
+      "workload":"fotonik3d_r",
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2017",
+      "subsuite":"rate_fp_v2",
+      "workload":"imagick_r",
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2017",
+      "subsuite":"rate_fp_v2",
+      "workload":"lbm_r",
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2017",
+      "subsuite":"rate_fp_v2",
+      "workload":"nab_r",
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2017",
+      "subsuite":"rate_fp_v2",
+      "workload":"namd_r",
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2017",
+      "subsuite":"rate_fp_v2",
+      "workload":"parest_r",
       "cluster_id":null,
       "simulation_type":null,
       "warmup":null
