@@ -45,7 +45,7 @@
       "memory_overhead_mb":0
     },
     "register_l1d":{
-      "params":"--perfect_dcache 1 --DCACHE_CYCLES 0",
+      "params":"--perfect_dcache 1 --dcache_cycles 0",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
