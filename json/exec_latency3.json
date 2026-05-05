@@ -4,7 +4,7 @@
   "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
   "architecture":"golden_cove",
   "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
-  "experiment":"exec_latency2",
+  "experiment":"exec_latency3",
   "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
   "workload_manager":"manual",
   "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
@@ -33,7 +33,7 @@
   "_configurations":"scarab configurations to sweep. slurm_options passes extra arguments to sbatch (ignored for manual runner); '--mem' is no longer needed here as memory is scheduled per-simpoint automatically. memory_overhead_mb (optional, default 0) adds a fixed MB overhead on top of the per-simpoint base memory for configs that allocate extra Scarab structures. Options: https://slurm.schedmd.com/sbatch.html",
   "configurations":{
     "perfect_l1d":{
-      "params":"--perfect_dcache 1 --warmup 50000000 --sim_limit i[0]:250000000",
+      "params":"--perfect_dcache 1 --warmup 50000000 --sim_limit i[0]:250000000  --mlc_present 0",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
@@ -41,17 +41,17 @@
     "actual":{
       "params":"",
       "binary":"scarab_current",
-      "slurm_options":"",
+      "slurm_options":"--warmup 50000000 --sim_limit i[0]:250000000  --mlc_present 0",
       "memory_overhead_mb":0
     },
     "register_l1d":{
-      "params":"--perfect_dcache 1 --DCACHE_CYCLES 0 --warmup 50000000 --sim_limit i[0]:250000000",
+      "params":"--perfect_dcache 1 --DCACHE_CYCLES 0 --warmup 50000000 --sim_limit i[0]:250000000  --mlc_present 0",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
     },
     "perf_dirpred":{
-      "params":"--perfect_bp 1 --warmup 50000000 --sim_limit i[0]:250000000",
+      "params":"--perfect_bp 1 --warmup 50000000 --sim_limit i[0]:250000000  --mlc_present 0",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
