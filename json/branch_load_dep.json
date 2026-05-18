@@ -45,7 +45,7 @@
       "memory_overhead_mb":0
     },
     "branch_load_dep_thresh1_5": {
-      "params": "--branch_load_dep 1 --branch_load_dep_repl_threshold 2.0",
+      "params": "--branch_load_dep 1 --branch_load_dep_repl_threshold 1.5",
       "binary": "scarab_current",
       "slurm_options": "",
       "memory_overhead_mb": 0
