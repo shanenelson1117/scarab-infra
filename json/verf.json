@@ -44,8 +44,20 @@
       "slurm_options":"",
       "memory_overhead_mb":0
     },
+    "branch_load_dep_one_load":{
+      "params":"--branch_load_dep 1 --branch_load_dep_zero_latency 1 --perfect_dcache 1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
     "branch_load_dep_thresh2": {
       "params": "--branch_load_dep 1 --branch_load_dep_repl_threshold 2 --branch_load_dep_zero_latency 1 --branch_load_dep_cross_load 1 --perfect_dcache 1",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 0
+    },
+    "regfile_l1d": {
+      "params": "--perfect_dcache 1 --dcache_hit_one_cycle 1",
       "binary": "scarab_current",
       "slurm_options": "",
       "memory_overhead_mb": 0
