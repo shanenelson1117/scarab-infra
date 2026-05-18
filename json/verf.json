@@ -4,7 +4,7 @@
   "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
   "architecture":"beefy",
   "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
-  "experiment":"branch_load_dep",
+  "experiment":"verf",
   "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
   "workload_manager":"manual",
   "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
@@ -49,12 +49,6 @@
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
-    },
-    "branch_load_dep_thresh2": {
-      "params": "--branch_load_dep 1 --branch_load_dep_repl_threshold 2 --branch_load_dep_zero_latency 1 --branch_load_dep_cross_load 1 --perfect_dcache 1",
-      "binary": "scarab_current",
-      "slurm_options": "",
-      "memory_overhead_mb": 0
     },
     "regfile_l1d": {
       "params": "--perfect_dcache 1 --dcache_hit_one_cycle 1",
