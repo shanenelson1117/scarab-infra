@@ -43,7 +43,26 @@
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
+    },
+    "branch_load_dep_thresh1_5": {
+      "params": "--branch_load_dep 1 --branch_load_dep_repl_threshold 2.0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 0
+    },
+    "branch_load_dep_thresh2": {
+      "params": "--branch_load_dep 1 --branch_load_dep_repl_threshold 2.0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 0
+    },
+    "branch_load_dep_thresh4": {
+      "params": "--branch_load_dep 1 --branch_load_dep_repl_threshold 4.0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 0
     }
+
   },
   "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
   "collect_stats":{
