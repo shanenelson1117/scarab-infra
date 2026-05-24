@@ -28,14 +28,6 @@
       "cluster_id":null,
       "simulation_type":null,
       "warmup":null
-    },
-    {
-      "suite":"datacenter",
-      "subsuite":null,
-      "workload":null,
-      "cluster_id":null,
-      "simulation_type":null,
-      "warmup":null
     }
   ],
   "_configurations":"scarab configurations to sweep. slurm_options passes extra arguments to sbatch (ignored for manual runner); '--mem' is no longer needed here as memory is scheduled per-simpoint automatically. memory_overhead_mb (optional, default 0) adds a fixed MB overhead on top of the per-simpoint base memory for configs that allocate extra Scarab structures. Options: https://slurm.schedmd.com/sbatch.html",
