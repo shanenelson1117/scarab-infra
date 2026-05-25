@@ -38,8 +38,14 @@
       "slurm_options":"",
       "memory_overhead_mb":0
     },
-    "branch_load_dep":{
+    "prefetch_into_dcache":{
       "params":"--branch_load_dep 1 --branch_load_dep_prefetch 1 --branch_load_dep_repl 0",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "prefetch_into_pref_dcache":{
+      "params":"--branch_load_dep 1 --branch_load_dep_prefetch 1 --branch_load_dep_repl 0 --dc_pref_cache_enable 1",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
