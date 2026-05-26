@@ -40,7 +40,7 @@
       "memory_overhead_mb":0
     },
     "branch_load_dep":{
-      "params":"--branch_load_dep 1 --branch_load_dep_hit_latency 1",
+      "params":"--branch_load_dep 1 --branch_load_dep_hit_latency 1 --branch_load_dep_repl 0",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
