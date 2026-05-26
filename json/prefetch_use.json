@@ -4,7 +4,7 @@
   "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
   "architecture":"beefy",
   "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
-  "experiment":"prefetcher",
+  "experiment":"prefetcher_use",
   "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
   "workload_manager":"manual",
   "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
@@ -32,8 +32,14 @@
   ],
   "_configurations":"scarab configurations to sweep. slurm_options passes extra arguments to sbatch (ignored for manual runner); '--mem' is no longer needed here as memory is scheduled per-simpoint automatically. memory_overhead_mb (optional, default 0) adds a fixed MB overhead on top of the per-simpoint base memory for configs that allocate extra Scarab structures. Options: https://slurm.schedmd.com/sbatch.html",
   "configurations":{
-    "record":{
-      "params":"--branch_load_dep 1 --branch_load_dep_trace_record 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces",
+    "baseline":{
+      "params":"",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "replay":{
+      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
