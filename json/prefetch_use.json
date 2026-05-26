@@ -38,32 +38,32 @@
       "slurm_options":"",
       "memory_overhead_mb":0
     },
-    "replay150":{
-      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_trace_max_dist 150",
+    "replay25":{
+      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_trace_lookahead 25",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "replay50":{
+      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_trace_lookahead 50",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "replay100":{
+      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_trace_lookahead 100",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
     },
     "replay200":{
-      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_trace_max_dist 200",
-      "binary":"scarab_current",
-      "slurm_options":"",
-      "memory_overhead_mb":0
-    },
-    "replay250":{
-      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_trace_max_dist 250",
-      "binary":"scarab_current",
-      "slurm_options":"",
-      "memory_overhead_mb":0
-    },
-    "replay300":{
-      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_trace_max_dist 300",
+      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_trace_lookahead 200",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
     },
     "replay400":{
-      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_trace_max_dist 400",
+      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_trace_lookahead 400",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
