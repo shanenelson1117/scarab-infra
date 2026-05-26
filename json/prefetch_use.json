@@ -39,7 +39,7 @@
       "memory_overhead_mb":0
     },
     "replay":{
-      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_trace_max_dist 100 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces",
+      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
