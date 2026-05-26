@@ -44,6 +44,12 @@
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
+    },
+    "all_hit":{
+      "params":"--perfect_dcache_hit_latency 1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
     }
   },
   "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
