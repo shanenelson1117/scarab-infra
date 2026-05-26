@@ -1,3 +1,4 @@
+
 {
   "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
   "descriptor_type":"simulation",
@@ -39,24 +40,11 @@
       "memory_overhead_mb":0
     },
     "branch_load_dep":{
-      "params":"--branch_load_dep 1 --branch_load_dep_zero_latency 1 --branch_load_dep_cross_load 1 --perfect_dcache 1",
+      "params":"--branch_load_dep 1 --branch_load_dep_hit_latency 1",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
-    },
-    "branch_load_dep_one_load":{
-      "params":"--branch_load_dep 1 --branch_load_dep_zero_latency 1 --perfect_dcache 1",
-      "binary":"scarab_current",
-      "slurm_options":"",
-      "memory_overhead_mb":0
-    },
-    "regfile_l1d": {
-      "params": "--perfect_dcache 1 --dcache_hit_one_cycle 1",
-      "binary": "scarab_current",
-      "slurm_options": "",
-      "memory_overhead_mb": 0
     }
-
   },
   "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
   "collect_stats":{
