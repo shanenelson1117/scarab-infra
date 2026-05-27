@@ -1,0 +1,106 @@
+
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"beefy",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"method_record",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation. This directory replaces ISO-based setups by mounting a local application folder (e.g., SPEC CPU2017) into the container during image build or runtime.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/scarab/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json' instead of the entire simpoints in 'workloads_db.json'",
+  "top_simpoint":true,
+  "_simulations":"A list of [suite, subsuite, workload, simpoint's cluster #, simulation type, warmup]. Available suite, subsuite, workloads, and each workload's available cluster_id and simulation_type are found in workloads/workloads_db.json. It runs all the simpoints if cluster_id is null and simulation type is one of 'exec', 'memtrace', 'pt'. When only 'suite' or 'suite'+'subsuite' is given and the rest are null, it launches simulations for all the workloads, all the simpoints if available, and in prioritized_mode (simulation type) in workloads/workloads_db.json. warmup can be null or smaller than the warmup of the trace available in workloads/workloads_db.json. The 'workload' field can also be a list of strings (e.g. ['gcc_r', 'mcf_r']) to run multiple specific workloads in a single entry, or an empty list [] to run all workloads (same as null).",
+  "simulations":[
+    {
+      "suite":"spec2017",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"scarab configurations to sweep. slurm_options passes extra arguments to sbatch (ignored for manual runner); '--mem' is no longer needed here as memory is scheduled per-simpoint automatically. memory_overhead_mb (optional, default 0) adds a fixed MB overhead on top of the per-simpoint base memory for configs that allocate extra Scarab structures. Options: https://slurm.schedmd.com/sbatch.html",
+  "configurations":{
+    "depth1":{
+      "params":"--branch_load_dep_max_depth 1 --branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "depth2":{
+      "params":"--branch_load_dep_max_depth 2 --branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "depth3":{
+      "params":"--branch_load_dep_max_depth 3 --branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "depth4":{
+      "params":"--branch_load_dep_max_depth 4 --branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "depth_unlimited":{
+      "params":"--branch_load_dep_max_depth 0 --branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize. Configure baseline and counters.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "branch_load_dep"
+    ],
+    "counters":[
+      "IPC",
+      "DCACHE_MISS",
+      "DCACHE_HIT"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs. collection_baseline specifies which config's MaxRSS is recorded in the mode-specific base_memory_mb_by_mode fields by ./sci --collect-mem (defaults to visualize.baseline). fallback_mb is the --mem limit used for workloads or simpoints that have no measured base_memory for the requested simulation mode yet; set it conservatively high to avoid OOM kills on the first run.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":16384
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC",
+      "DCACHE_MISS"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
