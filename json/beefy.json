@@ -41,7 +41,7 @@
   "_configurations":"scarab configurations to sweep. slurm_options passes extra arguments to sbatch (ignored for manual runner); '--mem' is no longer needed here as memory is scheduled per-simpoint automatically. memory_overhead_mb (optional, default 0) adds a fixed MB overhead on top of the per-simpoint base memory for configs that allocate extra Scarab structures. Options: https://slurm.schedmd.com/sbatch.html",
   "configurations":{
     "frontend_fix":{
-      "params":"--fe_ftq_FT_per_cycle 4 --fe_ftq_block_num 64 --icache_read_ports 8",
+      "params":"--fe_ftq_FT_per_cycle 8 --fe_ftq_block_num 64 --icache_read_ports 8 --fe_ftq_taken_cfs_per_cycle 8",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
