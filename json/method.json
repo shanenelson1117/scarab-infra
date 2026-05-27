@@ -33,8 +33,8 @@
   ],
   "_configurations":"scarab configurations to sweep. slurm_options passes extra arguments to sbatch (ignored for manual runner); '--mem' is no longer needed here as memory is scheduled per-simpoint automatically. memory_overhead_mb (optional, default 0) adds a fixed MB overhead on top of the per-simpoint base memory for configs that allocate extra Scarab structures. Options: https://slurm.schedmd.com/sbatch.html",
   "configurations":{
-    "depth1":{
-      "params":"--branch_load_dep 1 --branch_load_dep_max_depth 0 --branch_load_dep_trace_record 1",
+    "record":{
+      "params":"--branch_load_dep 1 --branch_load_dep_max_depth 0 --branch_load_dep_trace_record 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
