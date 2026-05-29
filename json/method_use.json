@@ -33,31 +33,31 @@
   "_configurations":"scarab configurations to sweep. slurm_options passes extra arguments to sbatch (ignored for manual runner); '--mem' is no longer needed here as memory is scheduled per-simpoint automatically. memory_overhead_mb (optional, default 0) adds a fixed MB overhead on top of the per-simpoint base memory for configs that allocate extra Scarab structures. Options: https://slurm.schedmd.com/sbatch.html",
   "configurations":{
     "depth1":{
-      "params":"--branch_load_dep_max_depth 1 --branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces",
+      "params":"--branch_load_dep_max_depth 1 --branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_repl 0",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
     },
     "depth2":{
-      "params":"--branch_load_dep_max_depth 2 --branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces",
+      "params":"--branch_load_dep_max_depth 2 --branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_repl 0",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
     },
     "depth3":{
-      "params":"--branch_load_dep_max_depth 3 --branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces",
+      "params":"--branch_load_dep_max_depth 3 --branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_repl 0",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
     },
     "depth4":{
-      "params":"--branch_load_dep_max_depth 4 --branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces",
+      "params":"--branch_load_dep_max_depth 4 --branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_repl 0",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
     },
     "depth_unlimited":{
-      "params":"--branch_load_dep_max_depth 0 --branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces",
+      "params":"--branch_load_dep_max_depth 0 --branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_repl 0",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
