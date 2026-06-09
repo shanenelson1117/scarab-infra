@@ -39,19 +39,19 @@
       "memory_overhead_mb":0
     },
     "depth_2":{
-      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_max_depth 2",
+      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_max_depth 2",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
     },
     "depth_5":{
-      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_max_depth 5",
+      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_max_depth 5",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
     },
     "depth_10":{
-      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_max_depth 10",
+      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_max_depth 10",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
