@@ -8,11 +8,11 @@
   "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
   "workload_manager":"manual",
   "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
-  "root_dir":"/home/shanen/",
+  "root_dir":"/home/mgiordan/",
   "_application_dir":"The path to the benchmark application directory used for tracing or simulation. This directory replaces ISO-based setups by mounting a local application folder (e.g., SPEC CPU2017) into the container during image build or runtime.",
-  "application_dir":"/home/shanen/applications",
+  "application_dir":"/home/mgiordan/applications",
   "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment.",
-  "scarab_path":"/home/shanen/samsung/scarab",
+  "scarab_path":"/home/mgiordan/samsung/scarab_sn",
   "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
   "scarab_build":"opt",
   "_traces_dir":"The local directory containing all simpointed traces",
@@ -39,19 +39,19 @@
       "memory_overhead_mb":0
     },
     "depth_2":{
-      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_max_depth 2",
+      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/mgiordan/samsung/bld_traces --branch_load_dep_max_depth 2",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
     },
     "depth_5":{
-      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_max_depth 5",
+      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/mgiordan/samsung/bld_traces --branch_load_dep_max_depth 5",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
     },
     "depth_10":{
-      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces --branch_load_dep_max_depth 10",
+      "params":"--branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/mgiordan/samsung/bld_traces --branch_load_dep_max_depth 10",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0

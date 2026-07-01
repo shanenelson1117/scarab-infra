@@ -1,0 +1,71 @@
+{
+  "descriptor_type": "simulation",
+  "architecture": "beefy",
+  "experiment": "new_method_bld_debug",
+  "workload_manager": "manual",
+  "root_dir": "/home/mgiordan/",
+  "application_dir": "/home/mgiordan/applications",
+  "scarab_path": "/home/mgiordan/samsung/scarab_sn",
+  "scarab_build": "opt",
+  "traces_dir": "/mnt/storage/traces/scarab/",
+  "top_simpoint": false,
+  "simulations": [
+    {
+      "suite": "spec2006",
+      "subsuite": "rate_int",
+      "workload": "astar",
+      "cluster_id": 34395,
+      "simulation_type": "memtrace",
+      "warmup": null
+    }
+  ],
+  "configurations": {
+    "baseline": {
+      "params": "",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 0
+    },
+    "depth_2": {
+      "params": "--branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/mgiordan/samsung/bld_traces --branch_load_dep_max_depth 2",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 0
+    },
+    "all_hit": {
+      "params": "--perfect_dcache_hit_latency 1",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 0
+    },
+    "depth_2_live_walk": {
+      "params": "--branch_load_dep 1 --branch_load_dep_trace_replay 1 --branch_load_dep_hit_latency 1 --branch_load_dep_trace_dir /home/mgiordan/samsung/bld_traces --branch_load_dep_max_depth 2",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 0
+    }
+  },
+  "collect_stats": {
+    "configs": null
+  },
+  "visualize": {
+    "baseline": "depth_2",
+    "configs": ["baseline", "depth_2", "all_hit", "depth_2_live_walk"],
+    "counters": ["IPC", "BR_EXEC_RESOLVE_TOTAL", "BLD_REPLAY_MARK_LOADS"]
+  },
+  "mem": {
+    "collection_baseline": null,
+    "fallback_mb": 16384
+  },
+  "perf_analyze": {
+    "baseline": "depth_2",
+    "counters": ["IPC", "BR_EXEC_RESOLVE_TOTAL"],
+    "stat_groups": ["core", "memory", "bp"],
+    "compare_all_stats": false,
+    "drift_top_workloads": 5,
+    "drift_top_simpoints": 5,
+    "prompt_budget_tokens": 12000,
+    "threshold_pct": 2.0,
+    "analyzer_cli_cmd": "codex"
+  }
+}
