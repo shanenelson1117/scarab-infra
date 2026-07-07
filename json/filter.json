@@ -32,32 +32,32 @@
   ],
   "_configurations":"scarab configurations to sweep. slurm_options passes extra arguments to sbatch (ignored for manual runner); '--mem' is no longer needed here as memory is scheduled per-simpoint automatically. memory_overhead_mb (optional, default 0) adds a fixed MB overhead on top of the per-simpoint base memory for configs that allocate extra Scarab structures. Options: https://slurm.schedmd.com/sbatch.html",
   "configurations":{
-    "m5":{
-      "params":"--bp_mispredict_filter_warmup 5000000 --bp_mispredict_filter_threshold 7",
+    "t2":{
+      "params":"--bp_mispredict_filter_warmup 30000000 --bp_mispredict_filter_threshold 2",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
     },
-    "m10":{
-      "params":"--bp_mispredict_filter_warmup 10000000 --bp_mispredict_filter_threshold 7",
+    "t4":{
+      "params":"--bp_mispredict_filter_warmup 30000000 --bp_mispredict_filter_threshold 4",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
     },
-    "m30":{
+    "t7":{
       "params":"--bp_mispredict_filter_warmup 30000000 --bp_mispredict_filter_threshold 7",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
     },
-    "m50":{
-      "params":"--bp_mispredict_filter_warmup 50000000 --bp_mispredict_filter_threshold 7",
+    "t12":{
+      "params":"--bp_mispredict_filter_warmup 30000000 --bp_mispredict_filter_threshold 12",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
     },
-    "m75":{
-      "params":"--bp_mispredict_filter_warmup 75000000 --bp_mispredict_filter_threshold 7",
+    "t15":{
+      "params":"--bp_mispredict_filter_warmup 30000000 --bp_mispredict_filter_threshold 15",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
