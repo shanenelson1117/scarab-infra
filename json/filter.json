@@ -44,20 +44,20 @@
       "slurm_options":"",
       "memory_overhead_mb":0
     },
-    "m20":{
-      "params":"--bp_mispredict_filter_warmup 15000000 --bp_mispredict_filter_threshold 7",
-      "binary":"scarab_current",
-      "slurm_options":"",
-      "memory_overhead_mb":0
-    },
     "m30":{
-      "params":"--bp_mispredict_filter_warmup 20000000 --bp_mispredict_filter_threshold 7",
+      "params":"--bp_mispredict_filter_warmup 30000000 --bp_mispredict_filter_threshold 7",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
     },
     "m50":{
-      "params":"--bp_mispredict_filter_warmup 30000000 --bp_mispredict_filter_threshold 7",
+      "params":"--bp_mispredict_filter_warmup 50000000 --bp_mispredict_filter_threshold 7",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "m75":{
+      "params":"--bp_mispredict_filter_warmup 75000000 --bp_mispredict_filter_threshold 7",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
