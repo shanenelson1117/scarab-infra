@@ -1,0 +1,93 @@
+{
+  "descriptor_type": "simulation",
+  "architecture": "kmhv3",
+  "experiment": "attr_replay_suite_kmhv3",
+  "workload_manager": "manual",
+  "root_dir": "/home/shanen/",
+  "application_dir": "/home/shanen/applications",
+  "scarab_path": "/home/shanen/samsung/scarab",
+  "scarab_build": "opt",
+  "traces_dir": "/mnt/storage/traces/scarab/",
+  "top_simpoint": true,
+  "simulations": [
+    {
+      "suite": "spec2006",
+      "subsuite": null,
+      "workload": null,
+      "cluster_id": null,
+      "simulation_type": null,
+      "warmup": null
+    }
+  ],
+  "configurations": {
+    "baseline": {
+      "params": "",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 0
+    },
+    "all_hit": {
+      "params": "--perfect_dcache_hit_latency 1",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 0
+    },
+    "addr_50": {
+      "params": "--branch_load_dep_addr_replay 1 --branch_load_dep_addr_replay_coverage 0.5 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 0
+    },
+    "addr_90": {
+      "params": "--branch_load_dep_addr_replay 1 --branch_load_dep_addr_replay_coverage 0.9 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 0
+    },
+    "addr_100": {
+      "params": "--branch_load_dep_addr_replay 1 --branch_load_dep_addr_replay_coverage 1.0 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 0
+    }
+  },
+  "collect_stats": {
+    "configs": null
+  },
+  "visualize": {
+    "baseline": "baseline",
+    "configs": [
+      "baseline",
+      "all_hit",
+      "addr_50",
+      "addr_90",
+      "addr_100"
+    ],
+    "counters": [
+      "IPC"
+    ]
+  },
+  "mem": {
+    "collection_baseline": null,
+    "fallback_mb": 16384
+  },
+  "perf_analyze": {
+    "baseline": "baseline",
+    "counters": [
+      "IPC",
+      "BR_EXEC_OPERAND_WAIT_MISPRED",
+      "DCACHE_MISS"
+    ],
+    "stat_groups": [
+      "core",
+      "memory",
+      "bp"
+    ],
+    "compare_all_stats": false,
+    "drift_top_workloads": 5,
+    "drift_top_simpoints": 5,
+    "prompt_budget_tokens": 12000,
+    "threshold_pct": 2.0,
+    "analyzer_cli_cmd": "codex"
+  }
+}
