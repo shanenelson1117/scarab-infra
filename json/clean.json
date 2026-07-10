@@ -12,7 +12,7 @@
   "_application_dir":"The path to the benchmark application directory used for tracing or simulation. This directory replaces ISO-based setups by mounting a local application folder (e.g., SPEC CPU2017) into the container during image build or runtime.",
   "application_dir":"/Users/shanenelson/Applications",
   "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment.",
-  "scarab_path":"/Users/shanenelson/Research26/scarab",
+  "scarab_path":"/Users/shanenelson/Research26/samsung/scarab",
   "_scarab_build":"scarab build mode. 'opt', 'opt-avx' (-march=skylake-avx512), 'dbg', or null. Values must match Scarab src/Makefile targets.",
   "scarab_build":"opt",
   "_traces_dir":"The local directory containing all simpointed traces",
