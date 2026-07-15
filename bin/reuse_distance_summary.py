@@ -262,14 +262,17 @@ def main():
         print(f"\nwrote {args.csv}")
 
     if args.plot:
-        plot_overall(overall, op, stream,
-                     args.plot_out or os.path.join(root, "reuse_hist.png"))
+        plot_overlay(aggs, HEADLINE, args.plot_out or os.path.join(root, "reuse_hist.png"))
 
     return 0
 
 
-def plot_overall(overall, pctl, stream, out_path):
-    """One overarching histogram: pooled stack reuse-distance distribution."""
+def plot_overlay(aggs, headline, out_path):
+    """Overarching CDF plot: one thin line per benchmark + the average in bold.
+
+    Each line is the cumulative % of a benchmark's full-stream reuses captured by
+    a fully-associative cache of the given size (i.e. the stack reuse-distance
+    CDF). The bold line is the average across benchmarks (equal weight)."""
     try:
         import matplotlib
         matplotlib.use("Agg")
@@ -277,44 +280,60 @@ def plot_overall(overall, pctl, stream, out_path):
     except ImportError:
         print("matplotlib not available; skipping --plot", file=sys.stderr)
         return
-    if not overall:
+
+    all_buckets = sorted({b for a in aggs.values() for b in a.hist.get(headline, {})})
+    if not all_buckets:
         print("no histogram data to plot", file=sys.stderr)
         return
-    bmin, bmax = min(overall), max(overall)
-    buckets = list(range(bmin, bmax + 1))
-    total = sum(overall.values())
-    counts = [overall.get(b, 0) for b in buckets]
-    labels = [human(1 << b) for b in buckets]
+    xs = list(range(all_buckets[0], all_buckets[-1] + 1))
+    labels = [human(1 << b) for b in xs]
+
+    def cdf(agg):
+        h = agg.hist.get(headline, {})
+        total = sum(h.values())
+        if not total:
+            return None
+        ys, cum = [], 0
+        for b in xs:
+            cum += h.get(b, 0)
+            ys.append(100.0 * cum / total)
+        return ys
+
+    curves = {name: c for name in sorted(aggs) for c in [cdf(aggs[name])] if c}
+    if not curves:
+        print("no per-benchmark curves to plot", file=sys.stderr)
+        return
+    # average across benchmarks (equal weight) at each bucket
+    avg = [sum(curves[n][i] for n in curves) / len(curves) for i in range(len(xs))]
 
     fig, ax = plt.subplots(figsize=(11, 6))
-    ax.bar(range(len(buckets)), counts, color="#3182bd", width=0.85)
-    ax.set_xticks(range(len(buckets)))
-    ax.set_xticklabels(labels, rotation=45, ha="right", fontsize=8)
-    ax.set_xlabel("stack reuse distance — distinct lines between any access i and i+1 "
-                  "to a marked line  (<= fully-assoc cache lines, log2 bucket)")
-    ax.set_ylabel("reuses")
-    ax.set_title("Branch-delaying-load reuse-distance histogram  [kmhv3, all benchmarks pooled]")
-    ax.grid(axis="y", ls=":", alpha=0.5)
+    cmap = plt.get_cmap("tab20")
+    for i, (name, ys) in enumerate(curves.items()):
+        ax.plot(range(len(xs)), ys, "-", color=cmap(i % 20), lw=1.0, alpha=0.65, label=name)
+    ax.plot(range(len(xs)), avg, "-", color="black", lw=3.0, label="AVERAGE (mean of benchmarks)")
 
-    # cumulative % on a twin axis + percentile markers
-    ax2 = ax.twinx()
-    cum, ys = 0, []
-    for b in buckets:
-        cum += overall.get(b, 0)
-        ys.append(100.0 * cum / total)
-    ax2.plot(range(len(buckets)), ys, "-o", color="#e6550d", markersize=3, label="cumulative %")
-    ax2.set_ylabel("cumulative % of reuses", color="#e6550d")
-    ax2.set_ylim(0, 100)
+    ax.set_xticks(range(len(xs)))
+    ax.set_xticklabels(labels, rotation=45, ha="right", fontsize=8)
+    ax.set_xlabel("fully-associative cache size (lines) = stack reuse distance: distinct "
+                  "lines between any access i and i+1 to a marked line")
+    ax.set_ylabel("cumulative % of reuses captured")
+    ax.set_ylim(0, 100)
+    ax.set_title("Branch-delaying-load reuse-distance CDF  [kmhv3, per benchmark + average]")
+    ax.grid(True, ls=":", alpha=0.5)
+
+    # percentile markers read off the average curve
     for tgt in (50, 90, 95):
-        v = pctl.get(tgt)
-        if v is None:
-            continue
-        idx = (v.bit_length() - 1) - bmin
-        if 0 <= idx < len(buckets):
-            ax2.axvline(idx, ls="--", color="#888", lw=1)
-            ax2.text(idx, tgt, f" f{tgt}={human(v)}", fontsize=8, color="#333", va="bottom")
-    fig.tight_layout()
-    fig.savefig(out_path, dpi=130)
+        idx = next((i for i, y in enumerate(avg) if y >= tgt), None)
+        if idx is not None:
+            ax.axhline(tgt, ls=":", color="#999", lw=0.8)
+            ax.text(idx, tgt, f" f{tgt}={human(1 << xs[idx])}", fontsize=8, color="#333", va="bottom")
+
+    n = len(curves) + 1                       # benchmarks + average
+    ncol = min(8, max(3, -(-n // 3)))         # wide and short: aim for ~3 rows
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.34), ncol=ncol, fontsize=7,
+              columnspacing=1.2, handlelength=1.4, borderaxespad=0.0, frameon=False)
+    fig.subplots_adjust(bottom=0.30)
+    fig.savefig(out_path, dpi=130, bbox_inches="tight")
     plt.close(fig)
     print(f"\nwrote {out_path}")
 
