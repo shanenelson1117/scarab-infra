@@ -1,0 +1,107 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"kmhv3",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"bld_repl_attr",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/scarab/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json' instead of the entire simpoints in 'workloads_db.json'",
+  "top_simpoint":true,
+  "_simulations":"A list of [suite, subsuite, workload, simpoint's cluster #, simulation type, warmup]. Only SPEC CPU2006 integer (rate_int) workloads.",
+  "simulations":[
+    {
+      "suite":"spec2006",
+      "subsuite":"rate_int",
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"Sweep of the attribution-sourced feeder reprieve replacement policy (branch_load_dep_repl_attribution). Each attr config marks the D-cache lines in the branch-delay attribution coverage set (100% of branch-stall cycles) as feeders and protects them for N deferred evictions. PREREQUISITE: the per-simpoint <bench>_<simpt>_braddr.csv files produced by a prior attribute-record pass must exist in --branch_load_dep_trace_dir. These configs do NOT force L1 hits (branch_load_dep_addr_replay stays off); they only test cache retention.",
+  "configurations":{
+    "baseline":{
+      "_params":"Plain LRU, no feeder marking or protection.",
+      "params":"",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "attr_n1":{
+      "_params":"Attribution-marked feeders, reprieve budget N=1.",
+      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 1 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1.0 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "attr_n2":{
+      "_params":"Attribution-marked feeders, reprieve budget N=2.",
+      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 2 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1.0 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "attr_n4":{
+      "_params":"Attribution-marked feeders, reprieve budget N=4.",
+      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 4 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1.0 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "attr_n1",
+      "attr_n2",
+      "attr_n4"
+    ],
+    "counters":[
+      "IPC",
+      "DCACHE_MISS",
+      "DCACHE_FEEDER_MARKED_ATTRIBUTION",
+      "DCACHE_FEEDER_REPRIEVE_GRANTED",
+      "DCACHE_FEEDER_EVICTED"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":16384
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC",
+      "DCACHE_MISS"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
