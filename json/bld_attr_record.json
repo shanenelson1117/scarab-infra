@@ -1,0 +1,87 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"kmhv3",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory.",
+  "experiment":"bld_attr_record",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/scarab/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'. Must match the replay experiment (bld_repl_attr) so the recorded <bench>_<simpt>_braddr.csv files cover the simpoints the replay run reads back.",
+  "top_simpoint":true,
+  "_simulations":"Attribution-record pass over the datacenter suite and SPEC CPU2017 integer (rate_int_v2). Each workload/simpoint writes its own <bench>_<simpt>_braddr.csv (plus branch_delay_loads.csv and _nfpool.csv) into --branch_load_dep_trace_dir, so all suites populate the same directory.",
+  "simulations":[
+    {
+      "suite":"datacenter",
+      "subsuite":"datacenter",
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2017",
+      "subsuite":"rate_int_v2",
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"Single config that enables the branch-delay-load attribution recorder. It writes the per-simpoint attribution CSVs (<bench>_<simpt>_braddr.csv) that the bld_repl_attr replay experiment consumes via --branch_load_dep_repl_attribution. Output goes to --branch_load_dep_trace_dir; the derived filename is <bench>_<simpt>, so datacenter and spec2017 workloads coexist in the same directory.",
+  "configurations":{
+    "record":{
+      "_params":"Attribution record pass -> bld_traces_kmhv3.",
+      "params":"--branch_load_dep_attribute_record 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":1024
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats.",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize.",
+  "visualize":{
+    "baseline":"record",
+    "configs":[
+      "record"
+    ],
+    "counters":[
+      "IPC"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"record",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
