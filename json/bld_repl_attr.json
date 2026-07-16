@@ -22,8 +22,8 @@
   "_simulations":"A list of [suite, subsuite, workload, simpoint's cluster #, simulation type, warmup]. Only SPEC CPU2006 integer (rate_int) workloads.",
   "simulations":[
     {
-      "suite":"spec2006",
-      "subsuite":"rate_int",
+      "suite":"spec2017",
+      "subsuite":"rate_int_v2",
       "workload":null,
       "cluster_id":null,
       "simulation_type":null,
@@ -41,21 +41,7 @@
     },
     "attr_n1":{
       "_params":"Attribution-marked feeders, reprieve budget N=1.",
-      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 1 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 0.9 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
-      "binary":"scarab_current",
-      "slurm_options":"",
-      "memory_overhead_mb":512
-    },
-    "attr_n2":{
-      "_params":"Attribution-marked feeders, reprieve budget N=2.",
-      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 2 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 0.9 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
-      "binary":"scarab_current",
-      "slurm_options":"",
-      "memory_overhead_mb":512
-    },
-    "attr_n4":{
-      "_params":"Attribution-marked feeders, reprieve budget N=4.",
-      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 4 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 0.9 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 1 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
