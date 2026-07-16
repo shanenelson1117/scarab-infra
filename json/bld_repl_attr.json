@@ -30,7 +30,7 @@
       "warmup":null
     }
   ],
-  "_configurations":"Sweep of the attribution-sourced feeder reprieve replacement policy (branch_load_dep_repl_attribution). Each attr config marks the D-cache lines in the branch-delay attribution coverage set (100% of branch-stall cycles) as feeders and protects them for N deferred evictions. PREREQUISITE: the per-simpoint <bench>_<simpt>_braddr.csv files produced by a prior attribute-record pass must exist in --branch_load_dep_trace_dir. These configs do NOT force L1 hits (branch_load_dep_addr_replay stays off); they only test cache retention.",
+  "_configurations":"Sweep of the attribution-sourced feeder reprieve replacement policy (branch_load_dep_repl_attribution). Each attr config marks the D-cache lines in the branch-delay attribution coverage set (90% of branch-stall cycles) as feeders and protects them for N deferred evictions. PREREQUISITE: the per-simpoint <bench>_<simpt>_braddr.csv files produced by a prior attribute-record pass must exist in --branch_load_dep_trace_dir. These configs do NOT force L1 hits (branch_load_dep_addr_replay stays off); they only test cache retention.",
   "configurations":{
     "baseline":{
       "_params":"Plain LRU, no feeder marking or protection.",
@@ -41,21 +41,21 @@
     },
     "attr_n1":{
       "_params":"Attribution-marked feeders, reprieve budget N=1.",
-      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 1 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1.0 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 1 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 0.9 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
     },
     "attr_n2":{
       "_params":"Attribution-marked feeders, reprieve budget N=2.",
-      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 2 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1.0 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 2 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 0.9 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
     },
     "attr_n4":{
       "_params":"Attribution-marked feeders, reprieve budget N=4.",
-      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 4 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1.0 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 4 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 0.9 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
