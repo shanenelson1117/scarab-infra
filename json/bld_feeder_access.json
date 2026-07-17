@@ -1,0 +1,81 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"kmhv3",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory.",
+  "experiment":"bld_feeder_access",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/scarab/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'. Must match the attribute-record pass (bld_attr_record) so the <bench>_<simpt>_braddr.csv files cover the simpoints profiled here.",
+  "top_simpoint":true,
+  "_simulations":"Feeder-access profiling pass over SPEC CPU2017 integer (rate_int_v2). Measurement-only: classifies every on-path demand-load access to an attribution feeder line as cold / reuse-hit / reuse-miss. Add other suites/subsuites here to profile them too.",
+  "simulations":[
+    {
+      "suite":"spec2017",
+      "subsuite":"rate_int_v2",
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"Single measurement-only config. Enables branch_load_dep_feeder_access_profile, which counts DCACHE_FEEDER_ACCESS_{TOTAL,COLD,REUSE_HIT,REUSE_MISS} for lines in the attribution feeder set. It does NOT change replacement (no --branch_load_dep_repl) and does NOT force hits (no --branch_load_dep_addr_replay). PREREQUISITE: the per-simpoint <bench>_<simpt>_braddr.csv files from a prior attribute-record pass (bld_attr_record) must exist in --branch_load_dep_trace_dir.",
+  "configurations":{
+    "profile":{
+      "_params":"Feeder-access stream profiler, coverage 0.9 attribution feeder set.",
+      "params":"--branch_load_dep_feeder_access_profile 1 --branch_load_dep_addr_replay_coverage 0.9 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats.",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize.",
+  "visualize":{
+    "baseline":"profile",
+    "configs":[
+      "profile"
+    ],
+    "counters":[
+      "DCACHE_FEEDER_ACCESS_TOTAL",
+      "DCACHE_FEEDER_ACCESS_COLD",
+      "DCACHE_FEEDER_ACCESS_REUSE_HIT",
+      "DCACHE_FEEDER_ACCESS_REUSE_MISS"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":16384
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"profile",
+    "counters":[
+      "DCACHE_FEEDER_ACCESS_TOTAL"
+    ],
+    "stat_groups":[
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}

@@ -72,9 +72,15 @@ def main():
     wl_row = _row(df, "Workload")
 
     all_cfgs = set(cfg_row.values)
-    for c in [args.baseline] + args.configs:
-        if c not in all_cfgs:
-            sys.exit(f"ERROR: config '{c}' not present in CSV (have: {sorted(all_cfgs)})")
+    if args.baseline not in all_cfgs:
+        sys.exit(f"ERROR: baseline '{args.baseline}' not present in CSV (have: {sorted(all_cfgs)})")
+    missing = [c for c in args.configs if c not in all_cfgs]
+    if missing:
+        print(f"WARNING: skipping configs not in CSV: {missing} (have: {sorted(all_cfgs)})",
+              file=sys.stderr)
+    args.configs = [c for c in args.configs if c in all_cfgs]
+    if not args.configs:
+        sys.exit(f"ERROR: none of the requested configs are in the CSV (have: {sorted(all_cfgs)})")
 
     # Workloads that have a baseline result, in first-seen order.
     workloads = []
