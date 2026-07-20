@@ -1,0 +1,167 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"kmhv3",
+  "_experiment":"Feeder-aware RRIP insertion-priority sweep on SPEC06. Mirrors dcache_repl_sweep_spec06 but restricts to the RRIP family (SRRIP/BRRIP/DRRIP), the only policies the branch_load_dep_repl_rrip mechanism hooks (cache_set_feeds_branch in libs/cache_lib.c overrides reference_val only for REPL_SRRIP/BRRIP/DRRIP). For each RRIP policy: a plain config (no feeder marking, per-policy baseline), a conservative feeder config (feeders installed at RRPV=1, one notch above the default long-interval insertion of 2), and a strong feeder config (feeders installed at RRPV=0, treated like a fresh hit -> longest residency). Feeders are marked via the attribution address set (branch_load_dep_repl_attribution), independent of the LRU reprieve scheme. Question answered: does giving branch-feeder lines better incoming RRIP priority reduce D$ feeder misses / branch-resolution stall cycles, and how much protection (RRPV 1 vs 0) is worth spending.",
+  "experiment":"dcache_rrip_feeder_spec06",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/scarab/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json' instead of the entire simpoints in 'workloads_db.json'",
+  "top_simpoint":true,
+  "_simulations":"SPEC CPU2006 integer + floating-point rate suites. The integer thrashers (mcf, libquantum, xalancbmk, omnetpp) and fp movers (milc, soplex) are where any base-policy headroom will show.",
+  "simulations":[
+    {
+      "suite":"spec2006",
+      "subsuite":"rate_int",
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2006",
+      "subsuite":"rate_fp",
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"RRIP family only (--dcache_repl: 16=SRRIP, 17=BRRIP, 18=DRRIP). Feeder configs add --branch_load_dep_repl_rrip 1 (enable feeder RRIP insertion priority) and --branch_load_dep_repl_rrip_rrpv <v> (v=1 conservative, v=0 strongest; clamped to [0, RRIP_DISTANT_VAL-1]=[0,2]). Feeder marking is driven by the attribution address set: --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3. This is independent of the LRU reprieve scheme (branch_load_dep_repl / _repl_n), which is NOT set here. PREREQUISITE for every feeder config: per-simpoint <bench>_<simpt>_braddr.csv from a prior SPEC06 attribute-record pass, present in bld_traces_kmhv3; a workload lacking one marks no feeders and behaves as the plain RRIP config of the same policy.",
+  "configurations":{
+    "baseline":{
+      "_params":"Plain true-LRU (dcache_repl default 0). Cross-policy reference line.",
+      "params":"",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "srrip":{
+      "_params":"Plain Static RRIP (dcache_repl 16), no feeder marking. Per-policy baseline for the srrip_feeder_* configs.",
+      "params":"--dcache_repl 16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "srrip_feeder_rrpv1":{
+      "_params":"SRRIP + conservative feeder priority: attribution-marked feeders installed at RRPV=1 (one notch above the default long-interval insertion of 2).",
+      "params":"--dcache_repl 16 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 1 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "srrip_feeder_rrpv0":{
+      "_params":"SRRIP + strongest feeder priority: attribution-marked feeders installed at RRPV=0 (treated like a fresh hit -> longest residency).",
+      "params":"--dcache_repl 16 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 0 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "brrip":{
+      "_params":"Plain Bimodal RRIP (dcache_repl 17), no feeder marking. Per-policy baseline for the brrip_feeder_* configs.",
+      "params":"--dcache_repl 17",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "brrip_feeder_rrpv1":{
+      "_params":"BRRIP + conservative feeder priority: attribution-marked feeders installed at RRPV=1. Largest expected delta vs plain, since BRRIP inserts most lines at distant (RRPV=3).",
+      "params":"--dcache_repl 17 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 1 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "brrip_feeder_rrpv0":{
+      "_params":"BRRIP + strongest feeder priority: attribution-marked feeders installed at RRPV=0.",
+      "params":"--dcache_repl 17 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 0 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "drrip":{
+      "_params":"Plain Dynamic RRIP (dcache_repl 18), no feeder marking. Per-policy baseline for the drrip_feeder_* configs.",
+      "params":"--dcache_repl 18",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "drrip_feeder_rrpv1":{
+      "_params":"DRRIP + conservative feeder priority: attribution-marked feeders installed at RRPV=1. Note feeder overrides in leader sets slightly perturb the SRRIP/BRRIP PSEL dueling.",
+      "params":"--dcache_repl 18 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 1 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "drrip_feeder_rrpv0":{
+      "_params":"DRRIP + strongest feeder priority: attribution-marked feeders installed at RRPV=0.",
+      "params":"--dcache_repl 18 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 0 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "srrip",
+      "srrip_feeder_rrpv1",
+      "srrip_feeder_rrpv0",
+      "brrip",
+      "brrip_feeder_rrpv1",
+      "brrip_feeder_rrpv0",
+      "drrip",
+      "drrip_feeder_rrpv1",
+      "drrip_feeder_rrpv0"
+    ],
+    "counters":[
+      "IPC",
+      "DCACHE_MISS",
+      "DCACHE_HIT",
+      "DCACHE_FEEDER_RRIP_PROMOTED",
+      "DCACHE_FEEDER_LINE_REUSED",
+      "BR_WAIT_DCACHE_MISS",
+      "BR_EXEC_OPERAND_WAIT_MISPRED"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":24576
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"srrip",
+    "counters":[
+      "IPC",
+      "DCACHE_MISS",
+      "DCACHE_FEEDER_RRIP_PROMOTED",
+      "BR_WAIT_DCACHE_MISS"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
