@@ -34,11 +34,17 @@ REUSE_MISS = "DCACHE_FEEDER_ACCESS_REUSE_MISS"
 
 
 def _row(df, name):
-    """Return the single stats-row named `name` restricted to simpoint columns."""
-    sel = df[df["stats"] == name]
-    if sel.empty:
-        sys.exit(f"ERROR: row '{name}' not found in CSV")
-    return sel.iloc[0, META_COLS:]
+    """Return the single stats-row named `name` restricted to simpoint columns.
+
+    `./sci --collect-stats` suffixes raw Scarab counters with `_count` (per-simpoint)
+    / `_total_count` (cumulative); consolidated rows (Weight, Configuration, ...)
+    carry no suffix. Try the bare name first, then the per-simpoint `_count` form.
+    """
+    for cand in (name, f"{name}_count"):
+        sel = df[df["stats"] == cand]
+        if not sel.empty:
+            return sel.iloc[0, META_COLS:]
+    sys.exit(f"ERROR: row '{name}' (nor '{name}_count') found in CSV")
 
 
 def weighted(stat_row, weight_row, cfg_row, wl_row, cfg, wl):

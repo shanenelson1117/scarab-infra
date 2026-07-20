@@ -22,8 +22,8 @@
   "_simulations":"Feeder-access profiling pass over SPEC CPU2017 integer (rate_int_v2). Measurement-only: classifies every on-path demand-load access to an attribution feeder line as cold / reuse-hit / reuse-miss. Add other suites/subsuites here to profile them too.",
   "simulations":[
     {
-      "suite":"spec2017",
-      "subsuite":"rate_int_v2",
+      "suite":"datacenter",
+      "subsuite":null,
       "workload":null,
       "cluster_id":null,
       "simulation_type":null,

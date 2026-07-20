@@ -1,0 +1,164 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"kmhv3",
+  "_experiment":"L1D replacement-policy sweep on SPEC06. Gate experiment for feeder-aware RRIP: measures whether the plain RRIP family (scan/thrash resistant) beats plain true-LRU on the SPEC06 D-cache thrashers (mcf, libquantum, xalancbmk, omnetpp, milc) BEFORE any feeder awareness is added. If plain RRIP does not reduce D$ misses / branch-resolution stall cycles vs LRU here, feeder-aware retention has no base to build on and the win must come from prefetch, not replacement. The lru_feeder_n1 config is the known-losing retention point (N>0 lost IPC on SPEC06 due to long feeder reuse distances thrashing non-feeders) included as a reference line.",
+  "experiment":"dcache_repl_sweep_spec06",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/scarab/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json' instead of the entire simpoints in 'workloads_db.json'",
+  "top_simpoint":true,
+  "_simulations":"SPEC CPU2006 integer + floating-point rate suites. The integer thrashers (mcf, libquantum, xalancbmk, omnetpp) and fp movers (milc, soplex) are where any base-policy headroom will show.",
+  "simulations":[
+    {
+      "suite":"spec2006",
+      "subsuite":"rate_int",
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2006",
+      "subsuite":"rate_fp",
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"Sweep of the L1 data-cache replacement policy via --dcache_repl (memory.param.def, Repl_Policy enum in libs/cache_lib.h). No feeder marking except in the explicit lru_feeder_n1 reference config. Enum ordinals: 0=TRUE_LRU, 15=NRU, 16=SRRIP, 17=BRRIP, 18=DRRIP, 19=SHIP. The RRIP family differs only in insertion RRPV; all share the same victim path, which is exactly the seam feeder-aware RRIP (Option B) would hook.",
+  "configurations":{
+    "baseline":{
+      "_params":"Plain true-LRU (dcache_repl default 0). Reference line.",
+      "params":"",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "srrip":{
+      "_params":"Static RRIP (dcache_repl 16). Long-interval insertion, scan-tolerant.",
+      "params":"--dcache_repl 16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "brrip":{
+      "_params":"Bimodal RRIP (dcache_repl 17). Mostly distant insertion; strongest thrash resistance.",
+      "params":"--dcache_repl 17",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "drrip":{
+      "_params":"Dynamic RRIP (dcache_repl 18). Set-dueling between SRRIP and BRRIP insertion.",
+      "params":"--dcache_repl 18",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "nru":{
+      "_params":"Not-recently-used / 1-bit RRIP (dcache_repl 15). Cheap LRU approximation reference.",
+      "params":"--dcache_repl 15",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "ship":{
+      "_params":"Signature-based hit predictor (dcache_repl 19). PC-signature-driven insertion.",
+      "params":"--dcache_repl 19",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "lru_feeder_n1":{
+      "_params":"Reference: true-LRU + attribution feeder reprieve N=1 (the known-losing retention point on SPEC06). PREREQUISITE: per-simpoint <bench>_<simpt>_braddr.csv from a prior SPEC06 attribute-record pass — present in bld_traces_kmhv3 (dealII, milc, gobmk, cactusADM, ...). Any workload lacking a braddr.csv marks no feeders and behaves as plain LRU.",
+      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 1 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "lru_feeder_n4":{
+      "_params":"true-LRU + attribution feeder reprieve N=4. Budget-sweep point: if the N>0 IPC loss deepens monotonically with N, that confirms long feeder reuse distances thrashing non-feeders (retention pays capacity for lines reused past the horizon). Same braddr.csv prerequisite as lru_feeder_n1.",
+      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 4 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "lru_feeder_n8":{
+      "_params":"true-LRU + attribution feeder reprieve N=8. Same braddr.csv prerequisite as lru_feeder_n1.",
+      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 8 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "lru_feeder_n16":{
+      "_params":"true-LRU + attribution feeder reprieve N=16. Strongest retention; upper end of the budget sweep. Same braddr.csv prerequisite as lru_feeder_n1.",
+      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 16 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "srrip",
+      "brrip",
+      "drrip",
+      "nru",
+      "ship",
+      "lru_feeder_n1",
+      "lru_feeder_n4",
+      "lru_feeder_n8",
+      "lru_feeder_n16"
+    ],
+    "counters":[
+      "IPC",
+      "DCACHE_MISS",
+      "DCACHE_HIT",
+      "BR_WAIT_DCACHE_MISS",
+      "BR_EXEC_OPERAND_WAIT_MISPRED"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":24576
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC",
+      "DCACHE_MISS",
+      "BR_WAIT_DCACHE_MISS"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
