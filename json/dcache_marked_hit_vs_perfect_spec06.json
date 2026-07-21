@@ -1,0 +1,116 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"kmhv3",
+  "_experiment":"Attribution force-hit oracle vs perfect-D$ ceiling on SPEC06. Uses the branch_load_dep attribution framework to force an L1-hit-latency completion for exactly the recorded branch-delay (marked) loads, and compares the IPC / branch-stall recovery against forcing ALL loads to complete at L1 hit latency. Both arms share the identical completion path in dcache_stage.c dcache_cacheline_miss (op->done_cycle = cycle_count + DCACHE_CYCLES + extra_ld_latency; the memory request still issues so the line fills and MSHRs are respected); they differ ONLY in which loads qualify -- br_addr_replay_hit(line) for the marked set vs every load for perfect. So baseline (real cache) is the floor, all_hit is the oracle ceiling, and the marked_hit_* configs measure what fraction of that ceiling the attribution set alone recovers, at two coverage operating points. PREREQUISITE for the marked_hit_* configs: per-simpoint <bench>_<simpt>_braddr.csv from a prior SPEC06 attribute-record pass (branch_load_dep_attribute_record), present in bld_traces_kmhv3; a workload lacking one marks no loads and behaves as baseline.",
+  "experiment":"dcache_marked_hit_vs_perfect_spec06",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/scarab/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json' instead of the entire simpoints in 'workloads_db.json'",
+  "top_simpoint":true,
+  "_simulations":"SPEC CPU2006 integer + floating-point rate suites.",
+  "simulations":[
+    {
+      "suite":"spec2006",
+      "subsuite":"rate_int",
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2006",
+      "subsuite":"rate_fp",
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"Force-hit oracle comparison. baseline = real D-cache, no oracle (floor). marked_hit_cov90 / marked_hit_cov100 = attribution force-hit oracle (--branch_load_dep_addr_replay 1) restricted to the recorded branch-delay set covering 90%/100% of attributed stall cycles (--branch_load_dep_addr_replay_coverage). all_hit = perfect-D$ hit-latency oracle (--perfect_dcache_hit_latency 1), every load completes at L1 hit latency (ceiling). All oracles complete at DCACHE_CYCLES + extra_ld_latency and still issue the fill; the ONLY difference across the three is the set of loads that qualify. Coverage 1.0 = full recorded set; 0.9 = the canonical smallest-set operating point.",
+  "configurations":{
+    "baseline":{
+      "_params":"Real D-cache, no force-hit oracle. Floor of the comparison.",
+      "params":"",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "marked_hit_cov90":{
+      "_params":"Attribution force-hit: marked (recorded branch-delay) loads complete at L1 hit latency, using the smallest line set covering 90% of attributed stall cycles.",
+      "params":"--branch_load_dep_addr_replay 1 --branch_load_dep_addr_replay_coverage 0.9 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "marked_hit_cov100":{
+      "_params":"Attribution force-hit: marked loads complete at L1 hit latency, using the full recorded branch-delay set (100% coverage). Upper bound of what the attribution set alone can recover.",
+      "params":"--branch_load_dep_addr_replay 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "all_hit":{
+      "_params":"Perfect-D$ hit-latency oracle: EVERY load completes at L1 hit latency on a miss (still issues the fill). Ceiling of the comparison.",
+      "params":"--perfect_dcache_hit_latency 1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "marked_hit_cov90",
+      "marked_hit_cov100",
+      "all_hit"
+    ],
+    "counters":[
+      "IPC",
+      "DCACHE_MISS",
+      "DCACHE_HIT",
+      "BR_WAIT_DCACHE_MISS",
+      "BR_EXEC_OPERAND_WAIT_MISPRED"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":24576
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC",
+      "DCACHE_MISS",
+      "BR_WAIT_DCACHE_MISS"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
