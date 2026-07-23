@@ -1,0 +1,87 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"kmhv3",
+  "_experiment":"Branch-delay-load attribution record pass over SPEC CPU2006 (rate_int + rate_fp). Enabling --branch_load_dep_attribute_record makes each workload/simpoint write its per-simpoint attribution CSVs into --branch_load_dep_trace_dir: the aggregated <bench>_<simpt>_braddr.csv (line,cycles) and branch_delay_loads.csv / _nfpool.csv, PLUS the new per-dynamic-instance <bench>_<simpt>_pf.csv (seqnum,line) emitted by br_exec_wait.cc for the seqnum-driven prefetcher. Writes to the same bld_traces_kmhv3 directory the replay experiments read, and uses the same top_simpoint setting as dcache_marked_hit_vs_perfect_spec06 so the recorded simpoints line up. REQUIRES scarab_path to be built from the bld-prefetch-seqnum-csv branch (which adds the pf.csv emit).",
+  "experiment":"bld_pf_record_spec06",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. Must be built from the bld-prefetch-seqnum-csv branch so the pf.csv emit is present.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/scarab/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'. Must match the replay experiment (dcache_marked_hit_vs_perfect_spec06) so the recorded per-simpoint CSVs cover the simpoints the replay run reads back.",
+  "top_simpoint":true,
+  "_simulations":"Attribution-record pass over SPEC CPU2006 integer + floating-point rate suites. Each workload/simpoint writes its own <bench>_<simpt>_{braddr,pf}.csv into --branch_load_dep_trace_dir; both suites populate the same directory.",
+  "simulations":[
+    {
+      "suite":"spec2006",
+      "subsuite":"rate_int",
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2006",
+      "subsuite":"rate_fp",
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"Single config that enables the branch-delay-load attribution recorder. Output goes to --branch_load_dep_trace_dir; the derived filename is <bench>_<simpt>_<suffix>, so int and fp workloads coexist in the same directory. This pass produces the <bench>_<simpt>_pf.csv (seqnum,line) files the seqnum-driven prefetch replay will consume, alongside the existing braddr.csv.",
+  "configurations":{
+    "record":{
+      "_params":"Attribution record pass -> bld_traces_kmhv3 (also emits per-instance pf.csv).",
+      "params":"--branch_load_dep_attribute_record 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":2048
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats.",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize.",
+  "visualize":{
+    "baseline":"record",
+    "configs":[
+      "record"
+    ],
+    "counters":[
+      "IPC"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"record",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
