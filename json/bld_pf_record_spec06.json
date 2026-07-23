@@ -42,7 +42,7 @@
   "configurations":{
     "record":{
       "_params":"Attribution record pass -> bld_traces_kmhv3 (also emits per-instance pf.csv).",
-      "params":"--branch_load_dep_attribute_record 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
+      "params":"--branch_load_dep_attribute_record 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3_pf",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":2048
