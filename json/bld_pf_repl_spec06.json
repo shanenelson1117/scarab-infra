@@ -1,0 +1,327 @@
+{
+  "_descriptor_type": "A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type": "simulation",
+  "_architecture": "A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture": "kmhv3",
+  "_experiment": "Seqnum-driven branch-delay-load replay prefetcher sweep on SPEC CPU2006, crossed with fill level. Reads the per-instance <bench>_<simpt>_pf.csv (seqnum,line) recorded by bld_pf_record_spec06 and, at retire, issues MRT_DPRF prefetches for recorded lines when the retire pointer (op_num) is within --branch_load_dep_pf_lookahead of each instance's seqnum. Two 1-D sweeps sharing the la2048/cov1.0 corner: (a) lookahead at full coverage, straddling the 352-entry ROB (128 = below ROB = too late; 512/2048/8192 = increasing lead); (b) coverage at a fixed lookahead (2048), where the braddr.csv line-set gates which lines are prefetched. Every sweep point is run at BOTH fill levels: _l1 = --branch_load_dep_pf_level 0 (fill L1D) and _l2 = --branch_load_dep_pf_level 1 (fill L2/MLC). Bracketed by baseline (floor), marked_hit and perfect-D$ all_hit oracles (ceilings). REQUIRES scarab_path built from bld-prefetch-seqnum-csv and the pf.csv/braddr.csv produced by bld_pf_record_spec06 in bld_traces_kmhv3_pf.",
+  "experiment": "bld_pf_repl_spec06",
+  "_workload_manager": "manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager": "manual",
+  "_root_dir": "Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir": "/home/shanen/",
+  "_application_dir": "The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir": "/home/shanen/applications",
+  "_scarab_path": "The path to the scarab repository that contains the scarab binary used to run the experiment. Must be built from the bld-prefetch-seqnum-csv branch (adds --branch_load_dep_pf_replay).",
+  "scarab_path": "/home/shanen/samsung/scarab",
+  "_scarab_build": "scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build": "opt",
+  "_traces_dir": "The local directory containing all simpointed traces",
+  "traces_dir": "/mnt/storage/traces/scarab/",
+  "_top_simpoint": "Run only top 3 simpoints stored in 'workloads_top_simp.json'. Must match bld_pf_record_spec06 so the recorded pf.csv/braddr.csv cover the simpoints the replay reads back.",
+  "top_simpoint": true,
+  "_simulations": "SPEC CPU2006 integer + floating-point rate suites (matches bld_pf_record_spec06 and dcache_marked_hit_vs_perfect_spec06).",
+  "simulations": [
+    {
+      "suite": "spec2006",
+      "subsuite": "rate_int",
+      "workload": null,
+      "cluster_id": null,
+      "simulation_type": null,
+      "warmup": null
+    }
+  ],
+  "_configurations": "Prefetcher common params (all pf_* configs): --branch_load_dep_pf_replay 1, pf trigger stream from --branch_load_dep_pf_dir, coverage line-set from --branch_load_dep_pf_coverage_dir. Both dirs point at bld_traces_kmhv3_pf (the bld_pf_record_spec06 output); repoint pf_coverage_dir to bld_traces_kmhv3 to gate on the original braddr set. Sweep axes: --branch_load_dep_pf_lookahead (W, retire-order op_num units; ROB=352) and --branch_load_dep_pf_coverage (fraction of braddr stall cycles kept; 1.0 = no gating). Fill level: _l1 = --branch_load_dep_pf_level 0 (L1D), _l2 = --branch_load_dep_pf_level 1 (L2/MLC). L2 fills leave the L1D unpolluted but need the load to hit the freshly-filled L2 on demand; comparing _l1 vs _l2 per point isolates whether L1D pollution or L2 residency dominates.",
+  "configurations": {
+    "baseline": {
+      "_params": "No prefetcher. Floor.",
+      "params": "",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 0
+    },
+    "pf_la128_cov100_l1": {
+      "_params": "Plain prefetch, fill L1D, cov 1.0: W=128 < ROB(352): too-late reference.",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 128 --branch_load_dep_pf_level 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la128_lrun2_rl1": {
+      "_params": "pf_la128_cov100_l1 + lru_feeder_n2 protection in L1D (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 128 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 0 --branch_load_dep_repl 1 --branch_load_dep_repl_n 2",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la128_lrun2_rl2": {
+      "_params": "pf_la128_cov100_l1 + lru_feeder_n2 protection in L2/MLC (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 128 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 1 --branch_load_dep_repl 1 --branch_load_dep_repl_n 2 --mlc_cache_repl_policy 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la128_srrip0_rl1": {
+      "_params": "pf_la128_cov100_l1 + srrip_feeder_rrpv0 protection in L1D (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 128 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 0 --dcache_repl 16 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la128_srrip0_rl2": {
+      "_params": "pf_la128_cov100_l1 + srrip_feeder_rrpv0 protection in L2/MLC (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 128 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 1 --mlc_cache_repl_policy 16 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la128_drrip0_rl1": {
+      "_params": "pf_la128_cov100_l1 + drrip_feeder_rrpv0 protection in L1D (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 128 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 0 --dcache_repl 18 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la128_drrip0_rl2": {
+      "_params": "pf_la128_cov100_l1 + drrip_feeder_rrpv0 protection in L2/MLC (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 128 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 1 --mlc_cache_repl_policy 18 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la512_cov100_l1": {
+      "_params": "Plain prefetch, fill L1D, cov 1.0: W=512, just above ROB.",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 512 --branch_load_dep_pf_level 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la512_lrun2_rl1": {
+      "_params": "pf_la512_cov100_l1 + lru_feeder_n2 protection in L1D (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 512 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 0 --branch_load_dep_repl 1 --branch_load_dep_repl_n 2",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la512_lrun2_rl2": {
+      "_params": "pf_la512_cov100_l1 + lru_feeder_n2 protection in L2/MLC (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 512 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 1 --branch_load_dep_repl 1 --branch_load_dep_repl_n 2 --mlc_cache_repl_policy 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la512_srrip0_rl1": {
+      "_params": "pf_la512_cov100_l1 + srrip_feeder_rrpv0 protection in L1D (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 512 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 0 --dcache_repl 16 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la512_srrip0_rl2": {
+      "_params": "pf_la512_cov100_l1 + srrip_feeder_rrpv0 protection in L2/MLC (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 512 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 1 --mlc_cache_repl_policy 16 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la512_drrip0_rl1": {
+      "_params": "pf_la512_cov100_l1 + drrip_feeder_rrpv0 protection in L1D (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 512 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 0 --dcache_repl 18 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la512_drrip0_rl2": {
+      "_params": "pf_la512_cov100_l1 + drrip_feeder_rrpv0 protection in L2/MLC (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 512 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 1 --mlc_cache_repl_policy 18 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la2048_cov100_l1": {
+      "_params": "Plain prefetch, fill L1D, cov 1.0: W=2048, comfortable lead.",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 2048 --branch_load_dep_pf_level 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la2048_lrun2_rl1": {
+      "_params": "pf_la2048_cov100_l1 + lru_feeder_n2 protection in L1D (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 2048 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 0 --branch_load_dep_repl 1 --branch_load_dep_repl_n 2",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la2048_lrun2_rl2": {
+      "_params": "pf_la2048_cov100_l1 + lru_feeder_n2 protection in L2/MLC (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 2048 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 1 --branch_load_dep_repl 1 --branch_load_dep_repl_n 2 --mlc_cache_repl_policy 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la2048_srrip0_rl1": {
+      "_params": "pf_la2048_cov100_l1 + srrip_feeder_rrpv0 protection in L1D (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 2048 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 0 --dcache_repl 16 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la2048_srrip0_rl2": {
+      "_params": "pf_la2048_cov100_l1 + srrip_feeder_rrpv0 protection in L2/MLC (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 2048 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 1 --mlc_cache_repl_policy 16 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la2048_drrip0_rl1": {
+      "_params": "pf_la2048_cov100_l1 + drrip_feeder_rrpv0 protection in L1D (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 2048 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 0 --dcache_repl 18 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la2048_drrip0_rl2": {
+      "_params": "pf_la2048_cov100_l1 + drrip_feeder_rrpv0 protection in L2/MLC (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 2048 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 1 --mlc_cache_repl_policy 18 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la8192_cov100_l1": {
+      "_params": "Plain prefetch, fill L1D, cov 1.0: W=8192, aggressive lead (watch early-eviction).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 8192 --branch_load_dep_pf_level 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la8192_lrun2_rl1": {
+      "_params": "pf_la8192_cov100_l1 + lru_feeder_n2 protection in L1D (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 8192 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 0 --branch_load_dep_repl 1 --branch_load_dep_repl_n 2",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la8192_lrun2_rl2": {
+      "_params": "pf_la8192_cov100_l1 + lru_feeder_n2 protection in L2/MLC (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 8192 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 1 --branch_load_dep_repl 1 --branch_load_dep_repl_n 2 --mlc_cache_repl_policy 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la8192_srrip0_rl1": {
+      "_params": "pf_la8192_cov100_l1 + srrip_feeder_rrpv0 protection in L1D (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 8192 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 0 --dcache_repl 16 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la8192_srrip0_rl2": {
+      "_params": "pf_la8192_cov100_l1 + srrip_feeder_rrpv0 protection in L2/MLC (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 8192 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 1 --mlc_cache_repl_policy 16 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la8192_drrip0_rl1": {
+      "_params": "pf_la8192_cov100_l1 + drrip_feeder_rrpv0 protection in L1D (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 8192 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 0 --dcache_repl 18 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "pf_la8192_drrip0_rl2": {
+      "_params": "pf_la8192_cov100_l1 + drrip_feeder_rrpv0 protection in L2/MLC (prefetch marks the line as a feeder on fill).",
+      "params": "--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_pf --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 8192 --branch_load_dep_pf_level 0 --branch_load_dep_pf_mark_feeder 1 --branch_load_dep_pf_repl_level 1 --mlc_cache_repl_policy 18 --branch_load_dep_repl_rrip 1 --branch_load_dep_repl_rrip_rrpv 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 1024
+    },
+    "marked_hit_cov100": {
+      "_params": "Reference ceiling: attribution force-hit oracle (any access to a recorded line completes at L1 hit latency), full coverage. Reads braddr from the same recorded set.",
+      "params": "--branch_load_dep_addr_replay 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3_pf",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 512
+    },
+    "all_hit": {
+      "_params": "Reference ceiling: perfect-D$ hit-latency oracle (every load completes at L1 hit latency).",
+      "params": "--perfect_dcache_hit_latency 1",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 0
+    }
+  },
+  "_collect_stats": "Stats collection settings for ./sci --collect-stats.",
+  "collect_stats": {
+    "configs": null
+  },
+  "_visualize": "Visualization settings for ./sci --visualize.",
+  "visualize": {
+    "baseline": "baseline",
+    "configs": [
+      "pf_la128_cov100_l1",
+      "pf_la128_lrun2_rl1",
+      "pf_la128_lrun2_rl2",
+      "pf_la128_srrip0_rl1",
+      "pf_la128_srrip0_rl2",
+      "pf_la128_drrip0_rl1",
+      "pf_la128_drrip0_rl2",
+      "pf_la512_cov100_l1",
+      "pf_la512_lrun2_rl1",
+      "pf_la512_lrun2_rl2",
+      "pf_la512_srrip0_rl1",
+      "pf_la512_srrip0_rl2",
+      "pf_la512_drrip0_rl1",
+      "pf_la512_drrip0_rl2",
+      "pf_la2048_cov100_l1",
+      "pf_la2048_lrun2_rl1",
+      "pf_la2048_lrun2_rl2",
+      "pf_la2048_srrip0_rl1",
+      "pf_la2048_srrip0_rl2",
+      "pf_la2048_drrip0_rl1",
+      "pf_la2048_drrip0_rl2",
+      "pf_la8192_cov100_l1",
+      "pf_la8192_lrun2_rl1",
+      "pf_la8192_lrun2_rl2",
+      "pf_la8192_srrip0_rl1",
+      "pf_la8192_srrip0_rl2",
+      "pf_la8192_drrip0_rl1",
+      "pf_la8192_drrip0_rl2",
+      "marked_hit_cov100",
+      "all_hit"
+    ],
+    "counters": [
+      "IPC",
+      "DCACHE_MISS",
+      "BR_WAIT_DCACHE_MISS",
+      "BLD_PF_ISSUED",
+      "BLD_PF_ALREADY_PRESENT",
+      "BLD_PF_FEEDER_MARKED_L1",
+      "BLD_PF_FEEDER_MARKED_L2"
+    ]
+  },
+  "_mem": "Memory scheduling and collection settings for Slurm jobs.",
+  "mem": {
+    "collection_baseline": null,
+    "fallback_mb": 24576
+  },
+  "_perf_analyze": "Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze": {
+    "baseline": "baseline",
+    "counters": [
+      "IPC",
+      "DCACHE_MISS",
+      "BR_WAIT_DCACHE_MISS",
+      "BLD_PF_ISSUED"
+    ],
+    "stat_groups": [
+      "core",
+      "memory"
+    ],
+    "compare_all_stats": false,
+    "drift_top_workloads": 5,
+    "drift_top_simpoints": 5,
+    "prompt_budget_tokens": 12000,
+    "threshold_pct": 2.0,
+    "analyzer_cli_cmd": "codex"
+  }
+}
