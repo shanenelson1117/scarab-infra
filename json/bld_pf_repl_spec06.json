@@ -28,6 +28,14 @@
       "cluster_id": null,
       "simulation_type": null,
       "warmup": null
+    },
+    {
+      "suite": "spec2006",
+      "subsuite": "rate_fp",
+      "workload": null,
+      "cluster_id": null,
+      "simulation_type": null,
+      "warmup": null
     }
   ],
   "_configurations": "Prefetcher common params (all pf_* configs): --branch_load_dep_pf_replay 1, pf trigger stream from --branch_load_dep_pf_dir, coverage line-set from --branch_load_dep_pf_coverage_dir. Both dirs point at bld_traces_kmhv3_pf (the bld_pf_record_spec06 output); repoint pf_coverage_dir to bld_traces_kmhv3 to gate on the original braddr set. Sweep axes: --branch_load_dep_pf_lookahead (W, retire-order op_num units; ROB=352) and --branch_load_dep_pf_coverage (fraction of braddr stall cycles kept; 1.0 = no gating). Fill level: _l1 = --branch_load_dep_pf_level 0 (L1D), _l2 = --branch_load_dep_pf_level 1 (L2/MLC). L2 fills leave the L1D unpolluted but need the load to hit the freshly-filled L2 on demand; comparing _l1 vs _l2 per point isolates whether L1D pollution or L2 residency dominates.",
