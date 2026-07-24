@@ -4,7 +4,7 @@
   "_architecture": "A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
   "architecture": "kmhv3",
   "_experiment": "Combined overnight run: SPEC2006 (rate_int+rate_fp) AND datacenter, self-contained. Per suite it carries the references (baseline; marked_hit_cov100 = the cov_100 force-hit headroom; all_hit) and the 28 acc100 perfect-prefetch configs, PLUS every prefetch config at --branch_load_dep_pf_success_rate {0.7,0.5} x --branch_load_dep_pf_success_seed {1,2} (unreliable prefetcher on the full feeder set, so feeder retention can be tested as the rescue on recurring lines). Supersedes bld_pf_repl_spec06/bld_pf_repl_datacenter (which can be killed). REQUIRES scarab built from bld-prefetch-seqnum-csv with the success-rate params.",
-  "experiment": "bld_pf_repl_acc",
+  "experiment": "bld_pf_repl_acc_datacenter",
   "_workload_manager": "manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
   "workload_manager": "manual",
   "_root_dir": "Root directory mounted into the docker container home, for instance, the user's home directory",
@@ -21,22 +21,6 @@
   "top_simpoint": true,
   "_simulations": "SPEC CPU2006 integer + floating-point rate suites (matches bld_pf_record_spec06 and dcache_marked_hit_vs_perfect_spec06).",
   "simulations": [
-    {
-      "suite": "spec2006",
-      "subsuite": "rate_int",
-      "workload": null,
-      "cluster_id": null,
-      "simulation_type": null,
-      "warmup": null
-    },
-    {
-      "suite": "spec2006",
-      "subsuite": "rate_fp",
-      "workload": null,
-      "cluster_id": null,
-      "simulation_type": null,
-      "warmup": null
-    },
     {
       "suite": "datacenter",
       "subsuite": null,
