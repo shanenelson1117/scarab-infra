@@ -1,0 +1,127 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"kmhv3",
+  "_experiment":"Top-N-per-branch attribution RECORD pass over datacenter. Each config enables --branch_load_dep_attribute_record 1 and caps the marked delaying loads to N per dynamic mispredicted-branch instance via --branch_load_dep_attr_max_loads N, keeping the N most-important loads ranked by --branch_load_dep_attr_rank (0 = total stall cycles, 1 = criticality tier). Every config writes its own per-simpoint <bench>_<simpt>_braddr.csv (line,cycles), branch_delay_loads.csv (with capped_cycles), _pf.csv (seqnum,line) and the new _brstream.csv (branch_pc -> kept load lines) into a DISTINCT --branch_load_dep_trace_dir, so the paired replay (bld_topn_marked_hit_datacenter) can force-hit exactly that config's kept line set. N=0 (rec_all) records the full delaying-load set = the mechanism ceiling. REQUIRES scarab_path built from the bld-attr-topn-loads-per-branch branch (adds attr_max_loads/attr_rank and the brstream CSV). Keep top_simpoint identical to the replay descriptor so the recorded simpoints line up.",
+  "experiment":"bld_topn_record_spec06",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. Must be built from the bld-attr-topn-loads-per-branch branch (adds --branch_load_dep_attr_max_loads / --branch_load_dep_attr_rank and the _brstream.csv emit).",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/scarab/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'. MUST match bld_topn_marked_hit_datacenter so the recorded per-simpoint CSVs cover the simpoints the replay reads back.",
+  "top_simpoint":true,
+  "_simulations":"Attribution-record pass over the datacenter suite. Each workload/simpoint writes its own <bench>_<simpt>_{braddr,pf,brstream}.csv into that config's --branch_load_dep_trace_dir.",
+  "simulations":[
+    {
+      "suite":"spec2006",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"One record config per (N, rank). Each writes to a DISTINCT trace dir (br_braddr_path derives <dir>/<bench>_<simpt>_braddr.csv), so the replay descriptor points each marked_hit config at the matching dir. rec_all (N=0) records every delaying load = the full mechanism ceiling and is rank-independent. _cyc = rank 0 (total stall cycles), _crit = rank 1 (criticality tier).",
+  "configurations":{
+    "rec_n1_cyc":{
+      "_params":"N=1 per branch, ranked by stall cycles -> topn_n1_cyc.",
+      "params":"--branch_load_dep_attribute_record 1 --branch_load_dep_attr_max_loads 1 --branch_load_dep_attr_rank 0 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n1_cyc",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":2048
+    },
+    "rec_n2_cyc":{
+      "_params":"N=2 per branch, ranked by stall cycles -> topn_n2_cyc.",
+      "params":"--branch_load_dep_attribute_record 1 --branch_load_dep_attr_max_loads 2 --branch_load_dep_attr_rank 0 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n2_cyc",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":2048
+    },
+    "rec_n3_cyc":{
+      "_params":"N=3 per branch, ranked by stall cycles -> topn_n3_cyc.",
+      "params":"--branch_load_dep_attribute_record 1 --branch_load_dep_attr_max_loads 3 --branch_load_dep_attr_rank 0 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n3_cyc",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":2048
+    },
+    "rec_n1_crit":{
+      "_params":"N=1 per branch, ranked by criticality tier -> topn_n1_crit.",
+      "params":"--branch_load_dep_attribute_record 1 --branch_load_dep_attr_max_loads 1 --branch_load_dep_attr_rank 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n1_crit",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":2048
+    },
+    "rec_n2_crit":{
+      "_params":"N=2 per branch, ranked by criticality tier -> topn_n2_crit.",
+      "params":"--branch_load_dep_attribute_record 1 --branch_load_dep_attr_max_loads 2 --branch_load_dep_attr_rank 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n2_crit",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":2048
+    },
+    "rec_n3_crit":{
+      "_params":"N=3 per branch, ranked by criticality tier -> topn_n3_crit.",
+      "params":"--branch_load_dep_attribute_record 1 --branch_load_dep_attr_max_loads 3 --branch_load_dep_attr_rank 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n3_crit",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":2048
+    },
+    "rec_all":{
+      "_params":"N=0 (unlimited) = every delaying load, rank-independent -> topn_all. The full mechanism ceiling the capped sets are measured against.",
+      "params":"--branch_load_dep_attribute_record 1 --branch_load_dep_attr_max_loads 0 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3_topn_all",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":2048
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats.",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize.",
+  "visualize":{
+    "baseline":"rec_all",
+    "configs":[
+      "rec_n1_cyc",
+      "rec_n2_cyc",
+      "rec_n3_cyc",
+      "rec_n1_crit",
+      "rec_n2_crit",
+      "rec_n3_crit",
+      "rec_all"
+    ],
+    "counters":[
+      "IPC"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"rec_all",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}

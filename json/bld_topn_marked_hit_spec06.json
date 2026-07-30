@@ -1,0 +1,204 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"kmhv3",
+  "_experiment":"Top-N-per-branch marked-load force-hit oracle vs perfect-D$ ceiling on datacenter. Measures how much of the branch-stall headroom is captured when only the N most-important delaying loads per branch are perfectly prefetched (marked as L1 hits). Each marked_hit config sets --branch_load_dep_addr_replay 1 --branch_load_dep_addr_replay_coverage 1 and points --branch_load_dep_trace_dir at the matching bld_topn_record_datacenter output dir, so br_addr_replay_hit() force-completes exactly that (N,rank)'s recorded braddr line set at L1 hit latency (dcache_stage.c: op->done_cycle = cycle_count + DCACHE_CYCLES + extra_ld_latency; the fill still issues). baseline = real D-cache (floor). all_hit = --perfect_dcache_hit_latency 1 (every load hits = ceiling). mh_all = force-hit the full recorded delaying-load set (mechanism ceiling). Headroom captured by N = (IPC[mh_nX] - IPC[baseline]) / (IPC[all_hit] - IPC[baseline]). PREREQUISITE: run bld_topn_record_datacenter first (same suite + top_simpoint) so each *_braddr.csv exists; a workload/config lacking one marks no loads and behaves as baseline.",
+  "experiment":"bld_topn_marked_hit_spec06",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. Must be built from the bld-attr-topn-loads-per-branch branch (same binary that produced the record CSVs).",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/scarab/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'. MUST match bld_topn_record_datacenter so each marked_hit config reads back a braddr.csv for every simpoint it runs.",
+  "top_simpoint":true,
+  "_simulations":"Datacenter suite (same selection as the record pass).",
+  "simulations":[
+    {
+      "suite":"spec2006",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"Force-hit oracle sweep over N and ranking. Each mh_* config force-hits (coverage 1.0) the line set recorded by the matching bld_topn_record_datacenter config, via --branch_load_dep_trace_dir pointing at that config's dir. baseline = floor, all_hit = perfect-D$ ceiling, mh_all = full delaying-load set. _cyc = cycles-ranked record, _crit = criticality-ranked record.",
+  "configurations":{
+    "baseline":{
+      "_params":"Real D-cache, no force-hit oracle. Floor of the comparison.",
+      "params":"",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "mh_n1_cyc":{
+      "_params":"Force-hit the N=1/cycles recorded set (topn_n1_cyc), coverage 1.0.",
+      "params":"--branch_load_dep_addr_replay 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n1_cyc",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "mh_n2_cyc":{
+      "_params":"Force-hit the N=2/cycles recorded set (topn_n2_cyc), coverage 1.0.",
+      "params":"--branch_load_dep_addr_replay 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n2_cyc",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "mh_n3_cyc":{
+      "_params":"Force-hit the N=3/cycles recorded set (topn_n3_cyc), coverage 1.0.",
+      "params":"--branch_load_dep_addr_replay 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n3_cyc",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "mh_n1_crit":{
+      "_params":"Force-hit the N=1/criticality recorded set (topn_n1_crit), coverage 1.0.",
+      "params":"--branch_load_dep_addr_replay 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n1_crit",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "mh_n2_crit":{
+      "_params":"Force-hit the N=2/criticality recorded set (topn_n2_crit), coverage 1.0.",
+      "params":"--branch_load_dep_addr_replay 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n2_crit",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "mh_n3_crit":{
+      "_params":"Force-hit the N=3/criticality recorded set (topn_n3_crit), coverage 1.0.",
+      "params":"--branch_load_dep_addr_replay 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n3_crit",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "mh_all":{
+      "_params":"Force-hit the full delaying-load set (topn_all, N=0), coverage 1.0. Marked-load mechanism ceiling.",
+      "params":"--branch_load_dep_addr_replay 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3_topn_all",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "pf_n1_cyc":{
+      "_params":"Timed seqnum-driven prefetch of the N=1/cycles set (topn_n1_cyc): 100% accuracy (success rate 1.0), lookahead 512, fill L1D, normal LRU (no feeder protection).",
+      "params":"--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n1_cyc --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n1_cyc --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 512 --branch_load_dep_pf_level 0 --branch_load_dep_pf_success_rate 1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":1024
+    },
+    "pf_n2_cyc":{
+      "_params":"Timed seqnum-driven prefetch of the N=2/cycles set (topn_n2_cyc): 100% accuracy, lookahead 512, fill L1D, normal LRU.",
+      "params":"--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n2_cyc --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n2_cyc --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 512 --branch_load_dep_pf_level 0 --branch_load_dep_pf_success_rate 1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":1024
+    },
+    "pf_n3_cyc":{
+      "_params":"Timed seqnum-driven prefetch of the N=3/cycles set (topn_n3_cyc): 100% accuracy, lookahead 512, fill L1D, normal LRU.",
+      "params":"--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n3_cyc --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n3_cyc --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 512 --branch_load_dep_pf_level 0 --branch_load_dep_pf_success_rate 1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":1024
+    },
+    "pf_n1_crit":{
+      "_params":"Timed seqnum-driven prefetch of the N=1/criticality set (topn_n1_crit): 100% accuracy, lookahead 512, fill L1D, normal LRU.",
+      "params":"--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n1_crit --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n1_crit --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 512 --branch_load_dep_pf_level 0 --branch_load_dep_pf_success_rate 1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":1024
+    },
+    "pf_n2_crit":{
+      "_params":"Timed seqnum-driven prefetch of the N=2/criticality set (topn_n2_crit): 100% accuracy, lookahead 512, fill L1D, normal LRU.",
+      "params":"--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n2_crit --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n2_crit --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 512 --branch_load_dep_pf_level 0 --branch_load_dep_pf_success_rate 1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":1024
+    },
+    "pf_n3_crit":{
+      "_params":"Timed seqnum-driven prefetch of the N=3/criticality set (topn_n3_crit): 100% accuracy, lookahead 512, fill L1D, normal LRU.",
+      "params":"--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n3_crit --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_topn_n3_crit --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 512 --branch_load_dep_pf_level 0 --branch_load_dep_pf_success_rate 1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":1024
+    },
+    "pf_all":{
+      "_params":"Timed seqnum-driven prefetch of the full delaying-load set (topn_all): 100% accuracy, lookahead 512, fill L1D, normal LRU. Timed counterpart of mh_all.",
+      "params":"--branch_load_dep_pf_replay 1 --branch_load_dep_pf_dir /home/shanen/samsung/bld_traces_kmhv3_topn_all --branch_load_dep_pf_coverage_dir /home/shanen/samsung/bld_traces_kmhv3_topn_all --branch_load_dep_pf_coverage 1 --branch_load_dep_pf_lookahead 512 --branch_load_dep_pf_level 0 --branch_load_dep_pf_success_rate 1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":1024
+    },
+    "all_hit":{
+      "_params":"Perfect-D$ hit-latency oracle: EVERY load completes at L1 hit latency on a miss (still issues the fill). Ceiling of the comparison.",
+      "params":"--perfect_dcache_hit_latency 1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "mh_n1_cyc",
+      "mh_n2_cyc",
+      "mh_n3_cyc",
+      "mh_n1_crit",
+      "mh_n2_crit",
+      "mh_n3_crit",
+      "mh_all",
+      "pf_n1_cyc",
+      "pf_n2_cyc",
+      "pf_n3_cyc",
+      "pf_n1_crit",
+      "pf_n2_crit",
+      "pf_n3_crit",
+      "pf_all",
+      "all_hit"
+    ],
+    "counters":[
+      "IPC",
+      "DCACHE_MISS",
+      "DCACHE_HIT",
+      "BR_WAIT_DCACHE_MISS",
+      "BR_EXEC_OPERAND_WAIT_MISPRED"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":24576
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC",
+      "DCACHE_MISS",
+      "BR_WAIT_DCACHE_MISS"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
