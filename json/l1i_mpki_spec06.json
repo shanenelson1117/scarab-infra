@@ -1,0 +1,101 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"kmhv3",
+  "_experiment":"From-scratch L1I (icache) miss MPKI measurement over SPEC CPU2006 (rate_int + rate_fp), all simpoints. Regenerates the on-path vs off-path L1I miss counts used by plot_l1i_onoff_path_mpki.py: ICACHE_MISS_ONPATH_count + ICACHE_MISS_OFFPATH_count (== ICACHE_MISS_count), divided by Cumulative_Instructions for MPKI. Uses kmhv3 (64 KB / 4-way L1I) with top_simpoint=false so every simpoint contributes to the per-workload weighted MPKI (this full-simpoint coverage is the difference from the top-3 bld_pf/topn experiments). NOTE: this produces the raw scarab stats only; it does NOT reproduce csv/l1i_summary.csv's user/kernel/pollution/geometry-delta decomposition, which comes from a separate post-processing pipeline not in this repo.",
+  "experiment":"l1i_mpki_spec06",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/scarab/",
+  "_top_simpoint":"false = run ALL simpoints in 'workloads_db.json' (not just the top 3), so the per-workload weighted L1I MPKI reflects the whole program.",
+  "top_simpoint":false,
+  "_simulations":"SPEC CPU2006 integer + floating-point rate suites (gcc, gobmk, perlbench, ...).",
+  "simulations":[
+    {
+      "suite":"spec2006",
+      "subsuite":"rate_int",
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"spec2006",
+      "subsuite":"rate_fp",
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"baseline = stock kmhv3 (wrong-path fetch enabled, --fetch_off_path_ops default 1), so ICACHE_MISS_OFFPATH_count is populated and the on/off-path split is meaningful. no_offpath = --fetch_off_path_ops 0 disables fetching down mispredicted (off) paths, so the frontend stops at an unresolved branch instead of speculatively fetching wrong-path lines; ICACHE_MISS_OFFPATH_count collapses to ~0 and only on-path L1I misses remain. Comparing the two isolates how much of the L1I miss stream (and its MPKI) is wrong-path-driven.",
+  "configurations":{
+    "baseline":{
+      "_params":"Stock kmhv3. Wrong-path fetch on (fetch_off_path_ops=1 default). Full on-path + off-path L1I miss stream.",
+      "params":"",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "no_offpath":{
+      "_params":"--fetch_off_path_ops 0: frontend does not fetch past an unresolved mispredicted branch, so there is no wrong-path icache access. ICACHE_MISS_OFFPATH_count -> ~0; on-path L1I misses only.",
+      "params":"--fetch_off_path_ops 0",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "baseline",
+      "no_offpath"
+    ],
+    "counters":[
+      "IPC",
+      "ICACHE_MISS",
+      "ICACHE_MISS_ONPATH",
+      "ICACHE_MISS_OFFPATH"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":24576
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC",
+      "ICACHE_MISS",
+      "ICACHE_MISS_ONPATH",
+      "ICACHE_MISS_OFFPATH"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
