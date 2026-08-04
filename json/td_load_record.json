@@ -22,7 +22,7 @@
   "_simulations":"Per-load memory-boundness record pass over the datacenter suite and SPEC CPU2017 integer (rate_int_v2). Adjust suites/workloads as needed. Each workload/simpoint writes its own mem_bound_loads_pc.csv and mem_bound_loads_addr.csv into that simpoint's output directory under <root_dir>/simulations/td_load_record/record/<workload>/<simpoint>/.",
   "simulations":[
     {
-      "suite":"spec2016",
+      "suite":"spec2006",
       "subsuite":null,
       "workload":null,
       "cluster_id":null,
