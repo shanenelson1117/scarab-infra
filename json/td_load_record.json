@@ -30,11 +30,11 @@
       "warmup":null
     }
   ],
-  "_configurations":"Single config that enables the per-load memory-boundness recorder. It is timing-neutral (IPC equals baseline) and writes, per simpoint, mem_bound_loads_pc.csv (pc,mem_bound_fraction) and mem_bound_loads_addr.csv (addr,mem_bound_fraction) to the simpoint's CWD. Every retired load is logged; threshold filtering is applied downstream at replay/analysis.",
+  "_configurations":"Single config that enables the per-load memory-boundness recorder. It is timing-neutral (IPC equals baseline). All simpoints write into ONE flat directory (--td_load_dir, auto-created if missing), each as <sanitized-trace-path>_mem_bound_loads_pc.csv (pc,mem_bound_fraction) and _addr.csv (addr,mem_bound_fraction); the filename is derived from the full trace path so simpoints never collide. Every retired load is logged; threshold filtering is applied downstream at replay/analysis. The td_load_replay experiment reads these files back via the same --td_load_dir.",
   "configurations":{
     "record":{
-      "_params":"Enable per-load memory-boundness tracking (topdown per-load attribution).",
-      "params":"--td_load_track_enable 1",
+      "_params":"Enable per-load memory-boundness tracking (topdown per-load attribution). --td_load_dir is the shared, flat directory (auto-created) the replay experiment reads from.",
+      "params":"--td_load_track_enable 1 --td_load_dir /home/shanen/samsung/td_load_traces",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":1024

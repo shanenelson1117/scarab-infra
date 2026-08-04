@@ -1,0 +1,124 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"kmhv3",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"td_load_replay",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/scarab/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'. Must match td_load_record so the recorded per-simpoint CSVs cover the simpoints replayed here.",
+  "top_simpoint":true,
+  "_simulations":"Replay pass. Must mirror the suites/subsuites/simpoints of td_load_record so the derived <bench>_<simpt>_mem_bound_loads_*.csv filenames line up. Reads the recorded CSVs from --td_load_dir and force-hits loads whose recorded mean memory-bound ratio is above --td_load_replay_thresh.",
+  "simulations":[
+    {
+      "suite":"spec2006",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"Requires td_load_record to have run first (same --td_load_dir). baseline is the untouched machine; replay_pc/replay_addr force L1-hit latency for loads whose recorded mean memory-bound ratio (keyed by instruction PC / data address respectively) exceeds --td_load_replay_thresh (p). The forced load's memory request is still issued, so memory traffic is unchanged; only the load completes at L1-hit latency. Sweep --td_load_replay_thresh to trace the counterfactual sensitivity (p=1.0 forces almost nothing, p=0.0 forces every recorded key).",
+  "configurations":{
+    "baseline":{
+      "_params":"Untouched machine (no force-hits).",
+      "params":"",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "replay_pc_50":{
+      "_params":"Force-hit loads whose PC has recorded mean mem-bound ratio > p.",
+      "params":"--td_load_replay 1 --td_load_replay_key pc --td_load_replay_thresh 0.5 --td_load_dir /home/shanen/samsung/td_load_traces",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "replay_pc_70":{
+      "_params":"Force-hit loads whose PC has recorded mean mem-bound ratio > p.",
+      "params":"--td_load_replay 1 --td_load_replay_key pc --td_load_replay_thresh 0.7 --td_load_dir /home/shanen/samsung/td_load_traces",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "replay_pc_90":{
+      "_params":"Force-hit loads whose PC has recorded mean mem-bound ratio > p.",
+      "params":"--td_load_replay 1 --td_load_replay_key pc --td_load_replay_thresh 0.9 --td_load_dir /home/shanen/samsung/td_load_traces",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "replay_addr_50":{
+      "_params":"Force-hit loads whose data address has recorded mean mem-bound ratio > p.",
+      "params":"--td_load_replay 1 --td_load_replay_key addr --td_load_replay_thresh 0.5 --td_load_dir /home/shanen/samsung/td_load_traces",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "replay_addr_70":{
+      "_params":"Force-hit loads whose data address has recorded mean mem-bound ratio > p.",
+      "params":"--td_load_replay 1 --td_load_replay_key addr --td_load_replay_thresh 0.7 --td_load_dir /home/shanen/samsung/td_load_traces",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "replay_addr_90":{
+      "_params":"Force-hit loads whose data address has recorded mean mem-bound ratio > p.",
+      "params":"--td_load_replay 1 --td_load_replay_key addr --td_load_replay_thresh 0.9 --td_load_dir /home/shanen/samsung/td_load_traces",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize. Configure baseline and counters.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "baseline",
+      "replay_pc",
+      "replay_addr"
+    ],
+    "counters":[
+      "IPC",
+      "TD_LOAD_FORCED_L1_HIT"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
