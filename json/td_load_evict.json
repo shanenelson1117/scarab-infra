@@ -1,0 +1,93 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"kmhv3",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"td_load_evict",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/scarab/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
+  "top_simpoint":true,
+  "_simulations":"Set-conflict / eviction tracking pass. Self-contained (needs only the traces): re-runs the per-load memory-boundness tracker and, for each L1D line l, measures between two consecutive accesses to l that both exceed td_load_replay_thresh how many DISTINCT lines were filled into set(l) (S) vs. associativity (W). Timing-neutral. Writes <trace>_line_evict_p<NN>.csv (columns: line,distinct_conflicts,ways) into --td_load_dir for CDF post-processing (bin/td_load_evict_cdf.py).",
+  "simulations":[
+    {
+      "suite":"spec2006",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"Each config sweeps the exceed threshold p. No IPC change (informational run). Output filename embeds the threshold so p=0.5/0.7/0.9 coexist in one directory. Unlike the record/replay experiments this needs no prior record run -- the exceed decision is per-instance.",
+  "configurations":{
+    "evict_50":{
+      "_params":"p=0.5.",
+      "params":"--td_load_evict_track 1 --td_load_replay_thresh 0.5 --td_load_dir /home/shanen/samsung/td_load_traces",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":256
+    },
+    "evict_70":{
+      "_params":"p=0.7.",
+      "params":"--td_load_evict_track 1 --td_load_replay_thresh 0.7 --td_load_dir /home/shanen/samsung/td_load_traces",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":256
+    },
+    "evict_90":{
+      "_params":"p=0.9.",
+      "params":"--td_load_evict_track 1 --td_load_replay_thresh 0.9 --td_load_dir /home/shanen/samsung/td_load_traces",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":256
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize. Configure baseline and counters.",
+  "visualize":{
+    "baseline":"evict_50",
+    "configs":[
+      "evict_50"
+    ],
+    "counters":[
+      "IPC"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"evict_50",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
