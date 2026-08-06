@@ -4,7 +4,7 @@
   "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
   "architecture":"kmhv3",
   "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
-  "experiment":"td_load_evict",
+  "experiment":"td_load_rrip",
   "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
   "workload_manager":"manual",
   "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
@@ -17,9 +17,9 @@
   "scarab_build":"opt",
   "_traces_dir":"The local directory containing all simpointed traces",
   "traces_dir":"/mnt/storage/traces/scarab/",
-  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'. Must match td_load_record so the recorded PC marked set covers these simpoints.",
   "top_simpoint":true,
-  "_simulations":"Set-conflict / eviction tracking pass. Self-contained (needs only the traces): re-runs the per-load memory-boundness tracker and, for an interval opened by an access exceeding --td_load_evict_start_thresh and closed by the next same-line access exceeding --td_load_evict_end_thresh, measures how many DISTINCT lines were filled into set(l) (S) vs. associativity (W). Timing-neutral. Writes <trace>_line_evict_s<NN>_e<MM>.csv (columns: line,distinct_conflicts,ways) into --td_load_dir for CDF post-processing (bin/td_load_evict_cdf.py).",
+  "_simulations":"Marked-line RRIP replacement experiment. Requires a prior td_load_record (PC) run that populated --td_load_dir with <trace>_mem_bound_loads_pc.csv. With --td_load_rrip_mark the L1D uses a crude SRRIP variant: lines whose triggering PC has recorded mean memory-bound ratio > threshold insert at RRPV 0 (protected), all others at the standard SRRIP distant value. Compare IPC vs. baseline with plot_td_load_ipc.py.",
   "simulations":[
     {
       "suite":"spec2006",
@@ -30,28 +30,35 @@
       "warmup":null
     }
   ],
-  "_configurations":"An interval OPENS at an access whose instance memory-bound fraction exceeds --td_load_evict_start_thresh (access x) and CLOSES at the next same-line access exceeding --td_load_evict_end_thresh (access x+1). Set start==end for the original symmetric behavior, or asymmetric to, e.g., open on strongly memory-bound and close on any memory-bound. Output filename embeds both (line_evict_s<NN>_e<MM>.csv) so combinations coexist in one directory. No IPC change; needs no prior record run (per-instance exceed).",
+  "_configurations":"baseline = untouched machine (default DCACHE_REPL). rrip_mark_<NN> = marked-RRIP with threshold p; sweep p. Requires td_load_record (pc) to have run first with the same --td_load_dir.",
   "configurations":{
-    "evict_50_90":{
-      "_params":"symmetric p=0.5.",
-      "params":"--td_load_evict_track 1 --td_load_evict_start_thresh 0.5 --td_load_evict_end_thresh 0.9 --td_load_dir /home/shanen/samsung/td_load_traces",
+    "baseline":{
+      "_params":"Untouched machine (default dcache replacement policy).",
+      "params":"",
       "binary":"scarab_current",
       "slurm_options":"",
-      "memory_overhead_mb":256
+      "memory_overhead_mb":0
     },
-    "evict_90_70":{
-      "_params":"symmetric p=0.9.",
-      "params":"--td_load_evict_track 1 --td_load_evict_start_thresh 0.9 --td_load_evict_end_thresh 0.7 --td_load_dir /home/shanen/samsung/td_load_traces",
+    "rrip_mark_50":{
+      "_params":"Protect PCs with recorded mean mem-bound ratio > 0.5.",
+      "params":"--td_load_rrip_mark 1 --td_load_replay_key pc --td_load_replay_thresh 0.5 --td_load_dir /home/shanen/samsung/td_load_traces",
       "binary":"scarab_current",
       "slurm_options":"",
-      "memory_overhead_mb":256
+      "memory_overhead_mb":512
     },
-    "evict_90_50":{
-      "_params":"asymmetric: open on strongly memory-bound (0.9), close on any memory-bound (0.5).",
-      "params":"--td_load_evict_track 1 --td_load_evict_start_thresh 0.9 --td_load_evict_end_thresh 0.5 --td_load_dir /home/shanen/samsung/td_load_traces",
+    "rrip_mark_70":{
+      "_params":"Protect PCs with recorded mean mem-bound ratio > 0.7.",
+      "params":"--td_load_rrip_mark 1 --td_load_replay_key pc --td_load_replay_thresh 0.7 --td_load_dir /home/shanen/samsung/td_load_traces",
       "binary":"scarab_current",
       "slurm_options":"",
-      "memory_overhead_mb":256
+      "memory_overhead_mb":512
+    },
+    "rrip_mark_90":{
+      "_params":"Protect PCs with recorded mean mem-bound ratio > 0.9.",
+      "params":"--td_load_rrip_mark 1 --td_load_replay_key pc --td_load_replay_thresh 0.9 --td_load_dir /home/shanen/samsung/td_load_traces",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
     }
   },
   "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
@@ -60,14 +67,16 @@
   },
   "_visualize":"Visualization settings for ./sci --visualize. Configure baseline and counters.",
   "visualize":{
-    "baseline":"evict_50_50",
+    "baseline":"baseline",
     "configs":[
-      "evict_50_50",
-      "evict_90_90",
-      "evict_90_50"
+      "baseline",
+      "rrip_mark_50",
+      "rrip_mark_70",
+      "rrip_mark_90"
     ],
     "counters":[
-      "IPC"
+      "IPC",
+      "DCACHE_MISS_LD"
     ]
   },
   "_mem":"Memory scheduling and collection settings for Slurm jobs.",
@@ -77,7 +86,7 @@
   },
   "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
   "perf_analyze":{
-    "baseline":"evict_50_50",
+    "baseline":"baseline",
     "counters":[
       "IPC"
     ],
