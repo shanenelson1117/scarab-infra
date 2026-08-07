@@ -45,6 +45,13 @@
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":256
+    },
+    "udp_+_resize_ftq":{
+      "_params":"FDIP on with UDP utility-driven throttling enabled (utility hash + default useful-set policy).",
+      "params":"--fdip_enable 1 --fdip_utility_hash_enable 1 --fdip_utility_learn_policy 0 --fdip_adjustable_ftq 1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":256
     }
   },
   "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
