@@ -22,7 +22,7 @@
   "_simulations":"Set-conflict / eviction tracking pass. Self-contained (needs only the traces): re-runs the per-load memory-boundness tracker and, for an interval opened by an access exceeding --td_load_evict_start_thresh and closed by the next same-line access exceeding --td_load_evict_end_thresh, measures how many DISTINCT lines were filled into set(l) (S) vs. associativity (W). Timing-neutral. Writes <trace>_line_evict_s<NN>_e<MM>.csv (columns: line,distinct_conflicts,ways) into --td_load_dir for CDF post-processing (bin/td_load_evict_cdf.py).",
   "simulations":[
     {
-      "suite":"spec2006",
+      "suite":"datacenter",
       "subsuite":null,
       "workload":null,
       "cluster_id":null,
