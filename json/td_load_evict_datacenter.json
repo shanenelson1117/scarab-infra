@@ -4,7 +4,7 @@
   "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
   "architecture":"kmhv3",
   "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
-  "experiment":"td_load_record",
+  "experiment":"td_load_evict_datacenter",
   "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
   "workload_manager":"manual",
   "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
@@ -17,9 +17,9 @@
   "scarab_build":"opt",
   "_traces_dir":"The local directory containing all simpointed traces",
   "traces_dir":"/mnt/storage/traces/scarab/",
-  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json' instead of the entire simpoints in 'workloads_db.json'",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
   "top_simpoint":true,
-  "_simulations":"Per-load memory-boundness record pass over the datacenter suite and SPEC CPU2017 integer (rate_int_v2). Adjust suites/workloads as needed. Each workload/simpoint writes its own mem_bound_loads_pc.csv and mem_bound_loads_addr.csv into that simpoint's output directory under <root_dir>/simulations/td_load_record/record/<workload>/<simpoint>/.",
+  "_simulations":"Set-conflict / eviction tracking pass. Self-contained (needs only the traces): re-runs the per-load memory-boundness tracker and, for an interval opened by an access exceeding --td_load_evict_start_thresh and closed by the next same-line access exceeding --td_load_evict_end_thresh, measures how many DISTINCT lines were filled into set(l) (S) vs. associativity (W). Timing-neutral. Writes <trace>_line_evict_s<NN>_e<MM>.csv (columns: line,distinct_conflicts,ways) into --td_load_dir for CDF post-processing (bin/td_load_evict_cdf.py).",
   "simulations":[
     {
       "suite":"spec2006",
@@ -30,14 +30,28 @@
       "warmup":null
     }
   ],
-  "_configurations":"Single config that enables the per-load memory-boundness recorder. It is timing-neutral (IPC equals baseline). All simpoints write into ONE flat directory (--td_load_dir, auto-created if missing), each as <sanitized-trace-path>_mem_bound_loads_pc.csv (pc,mem_bound_fraction) and _addr.csv (addr,mem_bound_fraction); the filename is derived from the full trace path so simpoints never collide. Every retired load is logged; threshold filtering is applied downstream at replay/analysis. The td_load_replay experiment reads these files back via the same --td_load_dir.",
+  "_configurations":"An interval OPENS at an access whose instance memory-bound fraction exceeds --td_load_evict_start_thresh (access x) and CLOSES at the next same-line access exceeding --td_load_evict_end_thresh (access x+1). Set start==end for the original symmetric behavior, or asymmetric to, e.g., open on strongly memory-bound and close on any memory-bound. Output filename embeds both (line_evict_s<NN>_e<MM>.csv) so combinations coexist in one directory. No IPC change; needs no prior record run (per-instance exceed).",
   "configurations":{
-    "record":{
-      "_params":"Enable per-load memory-boundness tracking (topdown per-load attribution). --td_load_dir is the shared, flat directory (auto-created) the replay experiment reads from.",
-      "params":"--td_load_track_enable 1 --td_load_dir /home/shanen/samsung/td_load_traces",
+    "evict_50_50":{
+      "_params":"symmetric p=0.5.",
+      "params":"--td_load_evict_track 1 --td_load_evict_start_thresh 0.5 --td_load_evict_end_thresh 0.5 --td_load_dir /home/shanen/samsung/td_load_traces_datacenter",
       "binary":"scarab_current",
       "slurm_options":"",
-      "memory_overhead_mb":1024
+      "memory_overhead_mb":256
+    },
+    "evict_70_70":{
+      "_params":"symmetric p=0.9.",
+      "params":"--td_load_evict_track 1 --td_load_evict_start_thresh 0.7 --td_load_evict_end_thresh 0.7 --td_load_dir /home/shanen/samsung/td_load_traces_datacenter",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":256
+    },
+    "evict_90_90":{
+      "_params":"asymmetric: open on strongly memory-bound (0.9), close on any memory-bound (0.5).",
+      "params":"--td_load_evict_track 1 --td_load_evict_start_thresh 0.9 --td_load_evict_end_thresh 0.9 --td_load_dir /home/shanen/samsung/td_load_traces_datacenter",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":256
     }
   },
   "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
@@ -46,9 +60,11 @@
   },
   "_visualize":"Visualization settings for ./sci --visualize. Configure baseline and counters.",
   "visualize":{
-    "baseline":"record",
+    "baseline":"evict_50_50",
     "configs":[
-      "record"
+      "evict_50_50",
+      "evict_90_90",
+      "evict_90_50"
     ],
     "counters":[
       "IPC"
@@ -61,7 +77,7 @@
   },
   "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
   "perf_analyze":{
-    "baseline":"record",
+    "baseline":"evict_50_50",
     "counters":[
       "IPC"
     ],
