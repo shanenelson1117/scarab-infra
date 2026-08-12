@@ -1,0 +1,160 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"kmhv3",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"l1d_repl_sweep_spec06",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. Any scarab build works -- these are stock built-in L1D replacement policies; no special branch required.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/scarab/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
+  "top_simpoint":true,
+  "_simulations":"Sweep of the built-in L1 data-cache replacement policies via --dcache_repl <ordinal> (the Repl_Policy enum in src/libs/cache_lib.h, cast straight from the uns param). baseline leaves DCACHE_REPL at the kmhv3 default (0 = REPL_TRUE_LRU). Only the general-purpose, self-contained policies are swept; oracle/special-purpose entries (IDEAL, SHADOW_IDEAL, IDEAL_STORAGE, MLP, PARTITION, RESTEER, STICKY_PRIORITY_LINES, ISO_PREF, LOW_PREF, VOID) and the custom MARKED_RRIP (needs --td_load_rrip_mark) are omitted. Compare IPC / DCACHE_MISS_LD vs. baseline with plot_stat_change.py.",
+  "simulations":[
+    {
+      "suite":"spec2006",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"baseline = kmhv3 default L1D policy (REPL_TRUE_LRU). Each repl_* config forces one built-in policy via --dcache_repl <ordinal>. repl_true_lru (0) is an explicit copy of the default and should read ~0% vs baseline (determinism sanity check). Ordinals: 0=TRUE_LRU, 1=RANDOM, 2=NOT_MRU, 3=ROUND_ROBIN, 14=LRU_REF, 15=NRU, 16=SRRIP, 17=BRRIP, 18=DRRIP, 19=SHIP.",
+  "configurations":{
+    "baseline":{
+      "_params":"kmhv3 default L1D replacement policy (REPL_TRUE_LRU).",
+      "params":"",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "repl_true_lru":{
+      "_params":"REPL_TRUE_LRU (0) -- explicit default; sanity check, ~0% vs baseline.",
+      "params":"--dcache_repl 0",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "repl_random":{
+      "_params":"REPL_RANDOM (1) -- random victim.",
+      "params":"--dcache_repl 1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "repl_not_mru":{
+      "_params":"REPL_NOT_MRU (2) -- not-most-recently-used.",
+      "params":"--dcache_repl 2",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "repl_round_robin":{
+      "_params":"REPL_ROUND_ROBIN (3) -- round-robin / FIFO-style victim.",
+      "params":"--dcache_repl 3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "repl_lru_ref":{
+      "_params":"REPL_LRU_REF (14) -- LRU via reference-counter aging.",
+      "params":"--dcache_repl 14",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "repl_nru":{
+      "_params":"REPL_NRU (15) -- not-recently-used (1-bit).",
+      "params":"--dcache_repl 15",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "repl_srrip":{
+      "_params":"REPL_SRRIP (16) -- static re-reference interval prediction.",
+      "params":"--dcache_repl 16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "repl_brrip":{
+      "_params":"REPL_BRRIP (17) -- bimodal RRIP.",
+      "params":"--dcache_repl 17",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "repl_drrip":{
+      "_params":"REPL_DRRIP (18) -- dynamic (set-dueling) RRIP.",
+      "params":"--dcache_repl 18",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "repl_ship":{
+      "_params":"REPL_SHIP (19) -- signature-based hit predictor.",
+      "params":"--dcache_repl 19",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize. Configure baseline and counters.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "baseline",
+      "repl_true_lru",
+      "repl_random",
+      "repl_not_mru",
+      "repl_round_robin",
+      "repl_lru_ref",
+      "repl_nru",
+      "repl_srrip",
+      "repl_brrip",
+      "repl_drrip",
+      "repl_ship"
+    ],
+    "counters":[
+      "IPC",
+      "DCACHE_MISS_LD"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
