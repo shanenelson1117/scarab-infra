@@ -1,0 +1,113 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"kmhv3",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"td_load_rrip_extrap",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. Must be built from the td-load-rrip-min-extrapolate branch (adds td_load_rrip_min_rrpv / td_load_rrip_extrapolate / td_load_rrip_extrap_anchor and the signed-RRPV marked-RRIP hit handler).",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/scarab/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'. Must match td_load_record so the recorded PC marked set covers these simpoints.",
+  "top_simpoint":true,
+  "_simulations":"Marked-line RRIP replacement sweep over the NEW initial-RRPV knobs. Requires a prior td_load_record (PC) run that populated --td_load_dir with <trace>_mem_bound_loads_pc.csv. All marked configs hold --td_load_replay_key pc --td_load_replay_thresh 0.5 fixed so the ONLY variable is how a marked (membound) line's initial RRPV is chosen: (a) fixed minimum via --td_load_rrip_min_rrpv (may be negative -> stronger-than-RRPV-0 protection), or (b) --td_load_rrip_extrapolate 1 to linearly map the load's membound fraction to an RRPV in [min, RRIP_DISTANT_VAL-1], with --td_load_rrip_extrap_anchor selecting the ramp's low fraction anchor (negative => defaults to the mark threshold). min=0 + extrapolate off reproduces the pre-change marked=RRPV-0 point. Compare IPC vs. baseline with plot_td_load_ipc.py.",
+  "simulations":[
+    {
+      "suite":"spec2006",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"baseline = untouched machine (default DCACHE_REPL). All rrip_* configs are marked-RRIP at threshold 0.5 (key=pc) and differ only in the initial-RRPV scheme. rrip_min0 = the pre-change RRPV-0 behavior (back-compat reference). rrip_min_neg1 / rrip_min_neg4 = fixed negative minimum (extrapolation off). rrip_extrap_neg4 = fraction-extrapolated ramp to min=-4 with the low anchor defaulting to the threshold. rrip_extrap_neg4_anchor0 = same ramp but anchored at fraction 0.0 (protection starts as soon as a load crosses the threshold). Requires td_load_record (pc) to have run first with the same --td_load_dir.",
+  "configurations":{
+    "baseline":{
+      "_params":"Untouched machine (default dcache replacement policy).",
+      "params":"",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "rrip_min_neg8":{
+      "_params":"Marked lines insert at RRPV -1 (one extra aging round beyond RRPV 0); no extrapolation.",
+      "params":"--td_load_rrip_mark 1 --td_load_replay_key addr --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -8 --td_load_rrip_extrapolate 1 --td_load_dir /home/shanen/samsung/td_load_traces",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "rrip_min_neg16":{
+      "_params":"Marked lines insert at RRPV -4 (four extra aging rounds beyond RRPV 0); no extrapolation.",
+      "params":"--td_load_rrip_mark 1 --td_load_replay_key addr --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -16 --td_load_rrip_extrapolate 1 --td_load_dir /home/shanen/samsung/td_load_traces",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "rrip_extrap_neg64":{
+      "_params":"Extrapolate the membound fraction to an initial RRPV in [-4, 1]; low anchor defaults to the threshold (fraction 0.5 -> basic, fraction 1.0 -> -4).",
+      "params":"--td_load_rrip_mark 1 --td_load_replay_key addr --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -64 --td_load_rrip_extrapolate 1 --td_load_dir /home/shanen/samsung/td_load_traces",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "rrip_extrap_neg64_anchor0":{
+      "_params":"Extrapolate the membound fraction to an initial RRPV in [-4, 1] with the ramp anchored at fraction 0.0, so a load gets meaningful protection as soon as it crosses the threshold.",
+      "params":"--td_load_rrip_mark 1 --td_load_replay_key addr --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -64 --td_load_rrip_extrapolate 1 --td_load_rrip_extrap_anchor 0.0 --td_load_dir /home/shanen/samsung/td_load_traces",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize. Configure baseline and counters.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "baseline",
+      "rrip_min0",
+      "rrip_min_neg1",
+      "rrip_min_neg4",
+      "rrip_extrap_neg4",
+      "rrip_extrap_neg4_anchor0"
+    ],
+    "counters":[
+      "IPC",
+      "DCACHE_MISS_LD"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
