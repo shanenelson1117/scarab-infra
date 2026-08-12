@@ -41,28 +41,28 @@
     },
     "rrip_anchor50":{
       "_params":"Extrapolate to min -64, ramp anchored at fraction 0.50 (only loads >= 0.5 protected).",
-      "params":"--td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -64 --td_load_rrip_extrap_anchor 0.5",
+      "params":"--td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -8 --td_load_rrip_extrap_anchor 0.5",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
     },
     "rrip_anchor30":{
       "_params":"Extrapolate to min -64, ramp anchored at fraction 0.30.",
-      "params":"--td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -64 --td_load_rrip_extrap_anchor 0.3",
+      "params":"--td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -8 --td_load_rrip_extrap_anchor 0.3",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
     },
     "rrip_anchor10":{
       "_params":"Extrapolate to min -64, ramp anchored at fraction 0.10.",
-      "params":"--td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -64 --td_load_rrip_extrap_anchor 0.1",
+      "params":"--td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -8 --td_load_rrip_extrap_anchor 0.1",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
     },
     "rrip_anchor01":{
       "_params":"Extrapolate to min -64, ramp anchored at fraction 0.01 (protect nearly every load with any membound cycles).",
-      "params":"--td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -64 --td_load_rrip_extrap_anchor 0.01",
+      "params":"--td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -8 --td_load_rrip_extrap_anchor 0.01",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
