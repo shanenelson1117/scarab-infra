@@ -17,9 +17,9 @@
   "scarab_build":"opt",
   "_traces_dir":"The local directory containing all simpointed traces",
   "traces_dir":"/mnt/storage/traces/scarab/",
-  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'. Must match td_load_record so the recorded PC marked set covers these simpoints.",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
   "top_simpoint":true,
-  "_simulations":"Marked-line RRIP replacement experiment. Requires a prior td_load_record (PC) run that populated --td_load_dir with <trace>_mem_bound_loads_pc.csv. With --td_load_rrip_mark the L1D uses a crude SRRIP variant: lines whose triggering PC has recorded mean memory-bound ratio > threshold insert at RRPV 0 (protected), all others at the standard SRRIP distant value. Compare IPC vs. baseline with plot_td_load_ipc.py.",
+  "_simulations":"Marked-line RRIP replacement experiment. Self-contained / single-pass: with --td_load_rrip_mark the L1D uses an SRRIP variant that computes each demanding load's memory-bound fraction ON DEMAND at fill (td_mem_cycles/td_window_cycles) -- no record run or CSV. A load whose fraction exceeds --td_load_replay_thresh inserts at RRPV 0 (protected); all others at the standard SRRIP distant value. Compare IPC vs. baseline with plot_td_load_ipc.py.",
   "simulations":[
     {
       "suite":"spec2006",
@@ -30,7 +30,7 @@
       "warmup":null
     }
   ],
-  "_configurations":"baseline = untouched machine (default DCACHE_REPL). rrip_mark_<NN> = marked-RRIP with threshold p; sweep p. Requires td_load_record (pc) to have run first with the same --td_load_dir.",
+  "_configurations":"baseline = untouched machine (default DCACHE_REPL). rrip_mark_<NN> = marked-RRIP protecting loads whose on-demand memory-bound fraction exceeds threshold p (at RRPV 0, the default min); sweep p.",
   "configurations":{
     "baseline":{
       "_params":"Untouched machine (default dcache replacement policy).",
@@ -41,21 +41,21 @@
     },
     "rrip_mark_50":{
       "_params":"Protect PCs with recorded mean mem-bound ratio > 0.5.",
-      "params":"--td_load_rrip_mark 1 --td_load_replay_key pc --td_load_replay_thresh 0.5 --td_load_dir /home/shanen/samsung/td_load_traces",
+      "params":"--td_load_rrip_mark 1 --td_load_replay_thresh 0.5",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
     },
     "rrip_mark_70":{
       "_params":"Protect PCs with recorded mean mem-bound ratio > 0.7.",
-      "params":"--td_load_rrip_mark 1 --td_load_replay_key pc --td_load_replay_thresh 0.7 --td_load_dir /home/shanen/samsung/td_load_traces",
+      "params":"--td_load_rrip_mark 1 --td_load_replay_thresh 0.7",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
     },
     "rrip_mark_90":{
       "_params":"Protect PCs with recorded mean mem-bound ratio > 0.9.",
-      "params":"--td_load_rrip_mark 1 --td_load_replay_key pc --td_load_replay_thresh 0.9 --td_load_dir /home/shanen/samsung/td_load_traces",
+      "params":"--td_load_rrip_mark 1 --td_load_replay_thresh 0.9",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
