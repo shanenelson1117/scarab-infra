@@ -39,16 +39,23 @@
       "slurm_options":"",
       "memory_overhead_mb":0
     },
-    "rrip_min_neg2":{
+    "rrip_min_neg100":{
       "_params":"Extrapolate to min RRPV -8, anchor 0.5.",
-      "params":"--td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -2 --td_load_rrip_extrap_anchor 0.01",
+      "params":"--td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -100 --td_load_rrip_extrap_anchor 0.01",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
     },
-    "rrip_min_neg8":{
+    "rrip_min_0_noextrap":{
       "_params":"Extrapolate to min RRPV -8, anchor 0.5.",
-      "params":"--td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -8 --td_load_rrip_extrap_anchor 0.01",
+      "params":"--td_load_rrip_mark 1 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv 0 --td_load_replay_thresh 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "rrip_min_neg8_noextrap":{
+      "_params":"Extrapolate to min RRPV -8, anchor 0.5.",
+      "params":"--td_load_rrip_mark 1 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -8 --td_load_replay_thresh 0.5",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
