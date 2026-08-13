@@ -2,7 +2,7 @@
   "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
   "descriptor_type":"simulation",
   "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
-  "architecture":"kmhv3",
+  "architecture":"mockingjay",
   "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
   "experiment":"td_noextrap_spec06",
   "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
@@ -22,7 +22,7 @@
   "_simulations":"Marked-RRIP min-RRPV sweep. Self-contained / single-pass: the L1D computes each demanding load's memory-bound fraction ON DEMAND at fill (td_mem_cycles/td_window_cycles) -- no record run, no CSV, so --td_load_dir / --td_load_replay_key are not used. All configs extrapolate the fraction to an initial RRPV with the ramp anchored at 0.5, sweeping only the minimum (most-protected) RRPV. NOTE: SRRIP victim selection depends only on the RELATIVE order of RRPVs, and making the minimum more negative is an order-preserving rescaling, so these configs are expected to behave nearly identically -- this experiment is a control; the anchor is the knob that actually changes which lines are protected (see td_rrip_anchor_sweep_spec06). Compare IPC vs. baseline with plot_stat_change.py / plot_td_load_ipc.py.",
   "simulations":[
     {
-      "suite":"spec06",
+      "suite":"spec2006",
       "subsuite":null,
       "workload":null,
       "cluster_id":null,
