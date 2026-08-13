@@ -4,7 +4,7 @@
   "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
   "architecture":"kmhv3",
   "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
-  "experiment":"l1d_repl_sweep_spec06",
+  "experiment":"l1d_repl_sweep_datacenter",
   "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
   "workload_manager":"manual",
   "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
@@ -22,7 +22,7 @@
   "_simulations":"Sweep of the built-in L1 data-cache replacement policies via --dcache_repl <ordinal> (the Repl_Policy enum in src/libs/cache_lib.h, cast straight from the uns param). baseline leaves DCACHE_REPL at the kmhv3 default (0 = REPL_TRUE_LRU). Only the general-purpose, self-contained policies are swept; oracle/special-purpose entries (IDEAL, SHADOW_IDEAL, IDEAL_STORAGE, MLP, PARTITION, RESTEER, STICKY_PRIORITY_LINES, ISO_PREF, LOW_PREF, VOID) and the custom MARKED_RRIP (needs --td_load_rrip_mark) are omitted. Compare IPC / DCACHE_MISS_LD vs. baseline with plot_stat_change.py.",
   "simulations":[
     {
-      "suite":"spec2006",
+      "suite":"datacenter",
       "subsuite":null,
       "workload":null,
       "cluster_id":null,
@@ -108,6 +108,20 @@
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
+    },
+    "rrip_min_neg8_noextrap":{
+      "_params":"Extrapolate to min RRPV -8, anchor 0.5.",
+      "params":"--td_load_rrip_mark 1 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -8 --td_load_replay_thresh 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "rrip_min_neg16_noextrap":{
+      "_params":"Extrapolate to min RRPV -8, anchor 0.5.",
+      "params":"--td_load_rrip_mark 1 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -16 --td_load_replay_thresh 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
     }
   },
   "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",

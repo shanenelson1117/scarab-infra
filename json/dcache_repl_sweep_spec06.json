@@ -4,7 +4,7 @@
   "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
   "architecture":"kmhv3",
   "_experiment":"L1D replacement-policy sweep on SPEC06. Gate experiment for feeder-aware RRIP: measures whether the plain RRIP family (scan/thrash resistant) beats plain true-LRU on the SPEC06 D-cache thrashers (mcf, libquantum, xalancbmk, omnetpp, milc) BEFORE any feeder awareness is added. If plain RRIP does not reduce D$ misses / branch-resolution stall cycles vs LRU here, feeder-aware retention has no base to build on and the win must come from prefetch, not replacement. The lru_feeder_n1 config is the known-losing retention point (N>0 lost IPC on SPEC06 due to long feeder reuse distances thrashing non-feeders) included as a reference line.",
-  "experiment":"dcache_repl_sweep_spec06",
+  "experiment":"dcache_repl_sweep_datacenter",
   "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
   "workload_manager":"manual",
   "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
@@ -22,16 +22,8 @@
   "_simulations":"SPEC CPU2006 integer + floating-point rate suites. The integer thrashers (mcf, libquantum, xalancbmk, omnetpp) and fp movers (milc, soplex) are where any base-policy headroom will show.",
   "simulations":[
     {
-      "suite":"spec2006",
-      "subsuite":"rate_int",
-      "workload":null,
-      "cluster_id":null,
-      "simulation_type":null,
-      "warmup":null
-    },
-    {
-      "suite":"spec2006",
-      "subsuite":"rate_fp",
+      "suite":"datacenter",
+      "subsuite":null,
       "workload":null,
       "cluster_id":null,
       "simulation_type":null,
@@ -81,34 +73,6 @@
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
-    },
-    "lru_feeder_n1":{
-      "_params":"Reference: true-LRU + attribution feeder reprieve N=1 (the known-losing retention point on SPEC06). PREREQUISITE: per-simpoint <bench>_<simpt>_braddr.csv from a prior SPEC06 attribute-record pass — present in bld_traces_kmhv3 (dealII, milc, gobmk, cactusADM, ...). Any workload lacking a braddr.csv marks no feeders and behaves as plain LRU.",
-      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 1 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
-      "binary":"scarab_current",
-      "slurm_options":"",
-      "memory_overhead_mb":512
-    },
-    "lru_feeder_n4":{
-      "_params":"true-LRU + attribution feeder reprieve N=4. Budget-sweep point: if the N>0 IPC loss deepens monotonically with N, that confirms long feeder reuse distances thrashing non-feeders (retention pays capacity for lines reused past the horizon). Same braddr.csv prerequisite as lru_feeder_n1.",
-      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 4 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
-      "binary":"scarab_current",
-      "slurm_options":"",
-      "memory_overhead_mb":512
-    },
-    "lru_feeder_n8":{
-      "_params":"true-LRU + attribution feeder reprieve N=8. Same braddr.csv prerequisite as lru_feeder_n1.",
-      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 8 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
-      "binary":"scarab_current",
-      "slurm_options":"",
-      "memory_overhead_mb":512
-    },
-    "lru_feeder_n16":{
-      "_params":"true-LRU + attribution feeder reprieve N=16. Strongest retention; upper end of the budget sweep. Same braddr.csv prerequisite as lru_feeder_n1.",
-      "params":"--branch_load_dep_repl 1 --branch_load_dep_repl_n 16 --branch_load_dep_repl_attribution 1 --branch_load_dep_addr_replay_coverage 1 --branch_load_dep_trace_dir /home/shanen/samsung/bld_traces_kmhv3",
-      "binary":"scarab_current",
-      "slurm_options":"",
-      "memory_overhead_mb":512
     }
   },
   "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
