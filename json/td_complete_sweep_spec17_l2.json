@@ -1,0 +1,189 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"mockingjay",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"td_complete_sweep_spec17_l2",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. Must be built from the td-load-rrip-min-extrapolate branch (adds td_load_rrip_min_rrpv / td_load_rrip_extrapolate / td_load_rrip_extrap_anchor, the signed-RRPV marked-RRIP hit handler, and the on-demand membound-fraction insert path).",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/scarab/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
+  "top_simpoint":true,
+  "_simulations":"Marked-RRIP min-RRPV sweep. Self-contained / single-pass: the L1D computes each demanding load's memory-bound fraction ON DEMAND at fill (td_mem_cycles/td_window_cycles) -- no record run, no CSV, so --td_load_dir / --td_load_replay_key are not used. All configs extrapolate the fraction to an initial RRPV with the ramp anchored at 0.5, sweeping only the minimum (most-protected) RRPV. NOTE: SRRIP victim selection depends only on the RELATIVE order of RRPVs, and making the minimum more negative is an order-preserving rescaling, so these configs are expected to behave nearly identically -- this experiment is a control; the anchor is the knob that actually changes which lines are protected (see td_rrip_anchor_sweep_spec06). Compare IPC vs. baseline with plot_stat_change.py / plot_td_load_ipc.py.",
+  "simulations":[
+    {
+      "suite":"spec2017",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"baseline = untouched machine (default DCACHE_REPL). Every rrip_* config extrapolates the on-demand membound fraction to an initial RRPV in [min, RRIP_DISTANT_VAL-1] with the ramp anchored at fraction 0.5 (fraction < 0.5 -> basic, 0.5 -> basic .. 1.0 -> min); they differ only in the minimum RRPV.",
+  "configurations":{
+    "baseline":{
+      "_params":"Untouched machine (default dcache replacement policy).",
+      "params":"",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "rrip_min_neg8_noextrap":{
+      "_params":"Extrapolate to min RRPV -8, anchor 0.5.",
+      "params":"--td_load_rrip_on_mlc 1 --td_load_rrip_mark 1 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -8 --td_load_replay_thresh 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "rrip_min_neg16_noextrap":{
+      "_params":"Extrapolate to min RRPV -16, anchor 0.5.",
+      "params":"--td_load_rrip_on_mlc 1 --td_load_rrip_mark 1 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -16 --td_load_rrip_extrap_anchor 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "rrip_min_neg32_noextrap":{
+      "_params":"Extrapolate to min RRPV -64, anchor 0.5.",
+      "params":"--td_load_rrip_on_mlc 1 --td_load_rrip_mark 1 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -32 --td_load_rrip_extrap_anchor 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "rrip_min_neg48_noextrap":{
+      "_params":"Extrapolate to min RRPV -64, anchor 0.5.",
+      "params":"--td_load_rrip_on_mlc 1 --td_load_rrip_mark 1 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -48 --td_load_replay_thresh 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "rrip_min_neg64_noextrap":{
+      "_params":"Extrapolate to min RRPV -64, anchor 0.5.",
+      "params":"--td_load_rrip_on_mlc 1 --td_load_rrip_mark 1 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -64 --td_load_replay_thresh 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "rrip_min_neg2_extrap_anchor50":{
+      "_params":"Extrapolate to min RRPV -8, anchor 0.5.",
+      "params":"--td_load_rrip_on_mlc 1 --td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -2 --td_load_rrip_extrap_anchor 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "rrip_min_neg2_noextrap":{
+      "_params":"Extrapolate to min RRPV -8, anchor 0.5.",
+      "params":"--td_load_rrip_on_mlc 1 --td_load_rrip_mark 1 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -2 --td_load_replay_thresh 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "rrip_min_neg4_extrap_anchor50":{
+      "_params":"Extrapolate to min RRPV -8, anchor 0.5.",
+      "params":"--td_load_rrip_on_mlc 1 --td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -4 --td_load_rrip_extrap_anchor 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "rrip_min_neg8_extrap_anchor50":{
+      "_params":"Extrapolate to min RRPV -8, anchor 0.5.",
+      "params":"--td_load_rrip_on_mlc 1 --td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -8 --td_load_rrip_extrap_anchor 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "rrip_min_neg16_extrap_anchor50":{
+      "_params":"Extrapolate to min RRPV -16, anchor 0.5.",
+      "params":"--td_load_rrip_on_mlc 1 --td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -16 --td_load_rrip_extrap_anchor 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "rrip_min_neg64_extrap_anchor50":{
+      "_params":"Extrapolate to min RRPV -64, anchor 0.5.",
+      "params":"--td_load_rrip_on_mlc 1 --td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -64 --td_load_rrip_extrap_anchor 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "rrip_anchor50_extrap_d8":{
+      "_params":"Extrapolate to min -64, ramp anchored at fraction 0.50 (only loads >= 0.5 protected).",
+      "params":"--td_load_rrip_on_mlc 1 --td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -8 --td_load_rrip_extrap_anchor 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "rrip_anchor30_extrap_d8":{
+      "_params":"Extrapolate to min -64, ramp anchored at fraction 0.30.",
+      "params":"--td_load_rrip_on_mlc 1 --td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -8 --td_load_rrip_extrap_anchor 0.3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "rrip_anchor10_extrap_d8":{
+      "_params":"Extrapolate to min -64, ramp anchored at fraction 0.10.",
+      "params":"--td_load_rrip_on_mlc 1 --td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -8 --td_load_rrip_extrap_anchor 0.1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "rrip_anchor01_extrap_d8":{
+      "_params":"Extrapolate to min -64, ramp anchored at fraction 0.01 (protect nearly every load with any membound cycles).",
+      "params":"--td_load_rrip_on_mlc 1 --td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -8 --td_load_rrip_extrap_anchor 0.01",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize. Configure baseline and counters.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "baseline",
+      "rrip_min_neg8",
+      "rrip_min_neg16",
+      "rrip_min_neg64",
+      "rrip_min_neg64_anchor0"
+    ],
+    "counters":[
+      "IPC",
+      "DCACHE_MISS_LD"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
