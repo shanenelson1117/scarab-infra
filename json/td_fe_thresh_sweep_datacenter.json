@@ -1,0 +1,160 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"mockingjay",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"td_fe_thresh_sweep_datacenter",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. Must be built from the td-load-rrip-min-extrapolate branch (adds the L1I front-end-bound marked-RRIP policy: td_fe_rrip_mark / td_fe_rrip_min_rrpv / td_fe_rrip_extrapolate / td_fe_rrip_extrap_anchor / td_fe_rrip_thresh).",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/shanen",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
+  "top_simpoint":true,
+  "_simulations":"L1I front-end-bound marked-RRIP THRESHOLD sweep. Fixed-min mode (no extrapolation): an on-path demand icache miss whose front-end-bound fraction (fe_bound_cycles / fe_window_cycles) EXCEEDS --td_fe_rrip_thresh inserts at the fixed depth --td_fe_rrip_min_rrpv (-48), everything else at basic. Depth is held at -48 and extrapolation is off across the sweep; only the threshold moves, trading coverage (low thresh -> protect almost any fetch-stalling miss) for selectivity (high thresh -> protect only misses that starved the front end for most of their window). Compare IPC / ICACHE_MISS vs. baseline with plot_stat_change.py.",
+  "simulations":[
+    {
+      "suite":"datacenter",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"baseline = untouched L1I (REPL_TRUE_LRU). Every thresh_NN config enables the L1I FE-bound policy with fixed depth -48 and no extrapolation, sweeping only --td_fe_rrip_thresh = 0.NN (thresh_00 = 0.0 protects any miss with >0 FE-bound cycles; thresh_90 = 0.9 protects only near-fully-FE-bound misses).",
+  "configurations":{
+    "baseline":{
+      "_params":"Untouched machine (default L1I replacement policy, REPL_TRUE_LRU).",
+      "params":"",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "thresh_00":{
+      "_params":"Depth -48, no extrapolation, threshold 0.0 (protect any fetch-stalling miss).",
+      "params":"--td_fe_rrip_mark 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.0",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "thresh_10":{
+      "_params":"Depth -48, no extrapolation, threshold 0.1.",
+      "params":"--td_fe_rrip_mark 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "thresh_20":{
+      "_params":"Depth -48, no extrapolation, threshold 0.2.",
+      "params":"--td_fe_rrip_mark 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.2",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "thresh_30":{
+      "_params":"Depth -48, no extrapolation, threshold 0.3.",
+      "params":"--td_fe_rrip_mark 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "thresh_40":{
+      "_params":"Depth -48, no extrapolation, threshold 0.4.",
+      "params":"--td_fe_rrip_mark 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.4",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "thresh_50":{
+      "_params":"Depth -48, no extrapolation, threshold 0.5.",
+      "params":"--td_fe_rrip_mark 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "thresh_60":{
+      "_params":"Depth -48, no extrapolation, threshold 0.6.",
+      "params":"--td_fe_rrip_mark 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.6",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "thresh_70":{
+      "_params":"Depth -48, no extrapolation, threshold 0.7.",
+      "params":"--td_fe_rrip_mark 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.7",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "thresh_80":{
+      "_params":"Depth -48, no extrapolation, threshold 0.8.",
+      "params":"--td_fe_rrip_mark 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.8",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "thresh_90":{
+      "_params":"Depth -48, no extrapolation, threshold 0.9 (protect only near-fully-FE-bound misses).",
+      "params":"--td_fe_rrip_mark 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.9",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize. Configure baseline and counters.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "baseline",
+      "thresh_00",
+      "thresh_10",
+      "thresh_20",
+      "thresh_30",
+      "thresh_40",
+      "thresh_50",
+      "thresh_60",
+      "thresh_70",
+      "thresh_80",
+      "thresh_90"
+    ],
+    "counters":[
+      "IPC",
+      "ICACHE_MISS"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
