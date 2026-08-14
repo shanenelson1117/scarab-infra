@@ -1,0 +1,128 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"mockingjay",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"td_fe_thresh_sweep_l2_datacenter",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. Must be built from the td-load-rrip-min-extrapolate branch (adds td_fe_rrip_on_mlc: the front-end-bound (instruction) marked-RRIP policy applied to the L2/MLC).",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/shanen",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
+  "top_simpoint":true,
+  "_simulations":"L2 front-end-bound marked-RRIP threshold x depth sweep. --td_fe_rrip_on_mlc puts the instruction FE-bound policy on the L2/MLC: an instruction demand-fetch (MRT_IFETCH) fill whose front-end-bound fraction (fe_bound_cycles/fe_window_cycles, measured at the L1I) EXCEEDS --td_fe_rrip_thresh inserts at the fixed depth --td_fe_rrip_min_rrpv, while ALL DATA lines (and instruction prefetches) insert at basic. Fixed-min mode (no extrapolation). High-selectivity thresholds only (0.70-0.90); each threshold is run at both depth -48 and depth -64. Compare IPC / ICACHE_MISS vs. baseline with plot_stat_change.py.",
+  "simulations":[
+    {
+      "suite":"datacenter",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"baseline = untouched L2 (default MLC_CACHE_REPL_POLICY). Every thresh_NN_dDD config puts the FE-bound instruction policy on the L2 with no extrapolation, fixed depth -DD, protecting instruction misses whose FE-bound fraction exceeds 0.NN; data lines always basic.",
+  "configurations":{
+    "baseline":{
+      "_params":"Untouched machine (default L2 replacement policy).",
+      "params":"",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "thresh_70_d48":{
+      "_params":"L2 FE policy, no extrapolation, threshold 0.7, depth -48.",
+      "params":"--td_fe_rrip_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.7",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "thresh_70_d64":{
+      "_params":"L2 FE policy, no extrapolation, threshold 0.7, depth -64.",
+      "params":"--td_fe_rrip_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -64 --td_fe_rrip_thresh 0.7",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "thresh_80_d48":{
+      "_params":"L2 FE policy, no extrapolation, threshold 0.8, depth -48.",
+      "params":"--td_fe_rrip_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.8",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "thresh_80_d64":{
+      "_params":"L2 FE policy, no extrapolation, threshold 0.8, depth -64.",
+      "params":"--td_fe_rrip_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -64 --td_fe_rrip_thresh 0.8",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "thresh_90_d48":{
+      "_params":"L2 FE policy, no extrapolation, threshold 0.9, depth -48.",
+      "params":"--td_fe_rrip_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.9",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "thresh_90_d64":{
+      "_params":"L2 FE policy, no extrapolation, threshold 0.9, depth -64.",
+      "params":"--td_fe_rrip_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -64 --td_fe_rrip_thresh 0.9",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize. Configure baseline and counters.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "baseline",
+      "thresh_70_d48",
+      "thresh_70_d64",
+      "thresh_80_d48",
+      "thresh_80_d64",
+      "thresh_90_d48",
+      "thresh_90_d64"
+    ],
+    "counters":[
+      "IPC",
+      "ICACHE_MISS"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
