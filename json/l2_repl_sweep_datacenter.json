@@ -16,7 +16,7 @@
   "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
   "scarab_build":"opt",
   "_traces_dir":"The local directory containing all simpointed traces",
-  "traces_dir":"/mnt/storage/traces/scarab/",
+  "traces_dir":"/mnt/storage/traces/shanen",
   "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
   "top_simpoint":true,
   "_simulations":"Sweep of the built-in L2 (MLC) replacement policies via --mlc_cache_repl_policy <ordinal> (the Repl_Policy enum in src/libs/cache_lib.h, cast straight from the uns param at memory.c init). baseline leaves MLC_CACHE_REPL_POLICY at the default (0 = REPL_TRUE_LRU). Only the general-purpose, self-contained policies are swept; oracle/special-purpose entries (IDEAL, SHADOW_IDEAL, IDEAL_STORAGE, MLP, PARTITION, RESTEER, STICKY_PRIORITY_LINES, ISO_PREF, LOW_PREF, VOID) and the custom MARKED_RRIP (needs --td_load_rrip_mark --td_load_rrip_on_mlc) are omitted. Intended as the stock-policy baseline set to compare against the marked-RRIP-on-L2 sweeps. Compare IPC / miss stats vs. baseline with plot_stat_change.py.",

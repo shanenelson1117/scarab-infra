@@ -22,7 +22,7 @@
   "_simulations":"Marked-RRIP min-RRPV sweep. Self-contained / single-pass: the L1D computes each demanding load's memory-bound fraction ON DEMAND at fill (td_mem_cycles/td_window_cycles) -- no record run, no CSV, so --td_load_dir / --td_load_replay_key are not used. All configs extrapolate the fraction to an initial RRPV with the ramp anchored at 0.5, sweeping only the minimum (most-protected) RRPV. NOTE: SRRIP victim selection depends only on the RELATIVE order of RRPVs, and making the minimum more negative is an order-preserving rescaling, so these configs are expected to behave nearly identically -- this experiment is a control; the anchor is the knob that actually changes which lines are protected (see td_rrip_anchor_sweep_spec06). Compare IPC vs. baseline with plot_stat_change.py / plot_td_load_ipc.py.",
   "simulations":[
     {
-      "suite":"spec2006",
+      "suite":"spec2017",
       "subsuite":null,
       "workload":null,
       "cluster_id":null,
@@ -39,28 +39,28 @@
       "slurm_options":"",
       "memory_overhead_mb":0
     },
-    "rrip_min_neg2":{
+    "rrip_min_neg2_extrap_anchor5":{
       "_params":"Extrapolate to min RRPV -8, anchor 0.5.",
       "params":"--td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -2 --td_load_rrip_extrap_anchor 0.5",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
     },
-    "rrip_min_neg8":{
+    "rrip_min_neg8_extrap_anchor5":{
       "_params":"Extrapolate to min RRPV -8, anchor 0.5.",
       "params":"--td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -8 --td_load_rrip_extrap_anchor 0.5",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
     },
-    "rrip_min_neg16":{
+    "rrip_min_neg16_extrap_anchor5":{
       "_params":"Extrapolate to min RRPV -16, anchor 0.5.",
       "params":"--td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -16 --td_load_rrip_extrap_anchor 0.5",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
     },
-    "rrip_min_neg64":{
+    "rrip_min_neg64_extrap_anchor5":{
       "_params":"Extrapolate to min RRPV -64, anchor 0.5.",
       "params":"--td_load_rrip_mark 1 --td_load_rrip_extrapolate 1 --td_load_rrip_min_rrpv -64 --td_load_rrip_extrap_anchor 0.5",
       "binary":"scarab_current",

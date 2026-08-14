@@ -16,7 +16,7 @@
   "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
   "scarab_build":"opt",
   "_traces_dir":"The local directory containing all simpointed traces",
-  "traces_dir":"/mnt/storage/traces/scarab/",
+  "traces_dir":"/mnt/storage/traces/shanen",
   "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
   "top_simpoint":true,
   "_simulations":"Front-end (L1 instruction cache) version of the marked-RRIP sweep -- the L1I analog of td_complete_sweep_datacenter_l2, NOT the L2. With --td_fe_rrip_mark the L1I uses REPL_MARKED_RRIP: each on-path demand icache miss's fill derives an initial RRPV from its front-end-bound fraction (of the cycles the fetch miss was outstanding, how many the front end was actually starving the machine = fe_bound_cycles / fe_window_cycles), computed on demand -- no CSV. The td_fe_rrip_* knob set is independent of the L1D/L2 td_load_rrip_* knobs; no --td_load_rrip_* / --td_load_rrip_on_mlc here. Insert-only for now (hits keep min(0,target)); note that under FDIP timely-prefetched lines insert at basic, so this bites mainly on fetch-stalling misses. Compare IPC / ICACHE_MISS vs. baseline with plot_stat_change.py.",
