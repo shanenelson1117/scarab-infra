@@ -1,0 +1,209 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"mockingjay",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"td_combined_dynamic_thresh_datacenter",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. Must be built from the td-load-rrip-min-extrapolate branch (adds td_combined_dynamic_thresh + per-class extreme thresholds td_combined_dyn_instr_thr_extreme / td_combined_dyn_data_thr_extreme).",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/shanen",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
+  "top_simpoint":true,
+  "_simulations":"Combined L2 dynamic-THRESHOLD experiment (the threshold analog of td_combined_dynamic_datacenter). Both classes hold their depth at the suite max (instr -48, data -32); instead of moving depth, the qualification THRESHOLDS move by fe_frac = fe_bound/(fe_bound+mem_bound) over a window: balanced -> nominal thresholds (instr 0.7 / data 0.5); front-end-dominated -> instruction threshold drops (more instructions qualify) and data is turned off (all basic); memory-dominated -> data threshold drops and instructions are turned off. Lower extreme threshold = broader protection for the dominant class. The sweep varies how far the dominant threshold drops (none=nominal i.e. deprioritize-only; mod/broad/broadest = progressively lower), plus adaptation window and band width. Compare IPC / ICACHE_MISS / DCACHE_MISS_LD vs. baseline with plot_stat_change.py.",
+  "simulations":[
+    {
+      "suite":"datacenter",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"baseline = untouched L2. static_both = combined policy, both classes at suite max depth with nominal thresholds (reference). dyn_* = dynamic-threshold combined policy; depths fixed at suite max, thresholds move: balanced -> nominal; one-sided -> dominant class threshold lowered (broader), non-dominant turned off. Grid over window (10k/100k/1M/cumulative), band (narrow .40-.60, medium .33-.66, wide .25-.75), and extreme threshold (none=nominal, mod 0.5/0.35, broad 0.3/0.2, broadest 0.1/0.05), plus corner combos.",
+  "configurations":{
+    "baseline":{
+      "_params":"Untouched machine (default L2 replacement policy).",
+      "params":"",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "static_both":{
+      "_params":"HEADLINE: instructions -48 AND data -32 together (both at their effective depth; non-zero-sum test).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_fe_rrip_min_rrpv -48 --td_load_rrip_extrapolate 0 --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -32",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_thr_none":{
+      "_params":"Dynamic threshold: 100k, band .33-.66, extreme thr=nominal (deprioritize-only). Depths fixed at suite max; balanced thr = nominal (0.7/0.5).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.7 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -32 --td_load_replay_thresh 0.5 --td_combined_dynamic_thresh 1 --td_combined_dyn_window 100000 --td_combined_dyn_fe_lo 0.33 --td_combined_dyn_fe_hi 0.66 --td_combined_dyn_instr_thr_extreme 0.7 --td_combined_dyn_data_thr_extreme 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_thr_mod":{
+      "_params":"Dynamic threshold: 100k, band .33-.66, moderate broadening. Depths fixed at suite max; balanced thr = nominal (0.7/0.5).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.7 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -32 --td_load_replay_thresh 0.5 --td_combined_dynamic_thresh 1 --td_combined_dyn_window 100000 --td_combined_dyn_fe_lo 0.33 --td_combined_dyn_fe_hi 0.66 --td_combined_dyn_instr_thr_extreme 0.5 --td_combined_dyn_data_thr_extreme 0.35",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_thr_broad":{
+      "_params":"Dynamic threshold: 100k, band .33-.66, broad. Depths fixed at suite max; balanced thr = nominal (0.7/0.5).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.7 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -32 --td_load_replay_thresh 0.5 --td_combined_dynamic_thresh 1 --td_combined_dyn_window 100000 --td_combined_dyn_fe_lo 0.33 --td_combined_dyn_fe_hi 0.66 --td_combined_dyn_instr_thr_extreme 0.3 --td_combined_dyn_data_thr_extreme 0.2",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_thr_broadest":{
+      "_params":"Dynamic threshold: 100k, band .33-.66, broadest. Depths fixed at suite max; balanced thr = nominal (0.7/0.5).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.7 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -32 --td_load_replay_thresh 0.5 --td_combined_dynamic_thresh 1 --td_combined_dyn_window 100000 --td_combined_dyn_fe_lo 0.33 --td_combined_dyn_fe_hi 0.66 --td_combined_dyn_instr_thr_extreme 0.1 --td_combined_dyn_data_thr_extreme 0.05",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_w10k_thr_mod":{
+      "_params":"Dynamic threshold: 10k window (fast), moderate. Depths fixed at suite max; balanced thr = nominal (0.7/0.5).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.7 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -32 --td_load_replay_thresh 0.5 --td_combined_dynamic_thresh 1 --td_combined_dyn_window 10000 --td_combined_dyn_fe_lo 0.33 --td_combined_dyn_fe_hi 0.66 --td_combined_dyn_instr_thr_extreme 0.5 --td_combined_dyn_data_thr_extreme 0.35",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_w1m_thr_mod":{
+      "_params":"Dynamic threshold: 1M window (slow), moderate. Depths fixed at suite max; balanced thr = nominal (0.7/0.5).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.7 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -32 --td_load_replay_thresh 0.5 --td_combined_dynamic_thresh 1 --td_combined_dyn_window 1000000 --td_combined_dyn_fe_lo 0.33 --td_combined_dyn_fe_hi 0.66 --td_combined_dyn_instr_thr_extreme 0.5 --td_combined_dyn_data_thr_extreme 0.35",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_cumulative_thr_mod":{
+      "_params":"Dynamic threshold: cumulative (window 0), moderate. Depths fixed at suite max; balanced thr = nominal (0.7/0.5).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.7 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -32 --td_load_replay_thresh 0.5 --td_combined_dynamic_thresh 1 --td_combined_dyn_window 0 --td_combined_dyn_fe_lo 0.33 --td_combined_dyn_fe_hi 0.66 --td_combined_dyn_instr_thr_extreme 0.5 --td_combined_dyn_data_thr_extreme 0.35",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_band_narrow_thr_mod":{
+      "_params":"Dynamic threshold: 100k, narrow band, moderate. Depths fixed at suite max; balanced thr = nominal (0.7/0.5).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.7 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -32 --td_load_replay_thresh 0.5 --td_combined_dynamic_thresh 1 --td_combined_dyn_window 100000 --td_combined_dyn_fe_lo 0.4 --td_combined_dyn_fe_hi 0.6 --td_combined_dyn_instr_thr_extreme 0.5 --td_combined_dyn_data_thr_extreme 0.35",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_band_wide_thr_mod":{
+      "_params":"Dynamic threshold: 100k, wide band, moderate. Depths fixed at suite max; balanced thr = nominal (0.7/0.5).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.7 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -32 --td_load_replay_thresh 0.5 --td_combined_dynamic_thresh 1 --td_combined_dyn_window 100000 --td_combined_dyn_fe_lo 0.25 --td_combined_dyn_fe_hi 0.75 --td_combined_dyn_instr_thr_extreme 0.5 --td_combined_dyn_data_thr_extreme 0.35",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_w10k_thr_broad":{
+      "_params":"Dynamic threshold: 10k window (fast), broad. Depths fixed at suite max; balanced thr = nominal (0.7/0.5).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.7 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -32 --td_load_replay_thresh 0.5 --td_combined_dynamic_thresh 1 --td_combined_dyn_window 10000 --td_combined_dyn_fe_lo 0.33 --td_combined_dyn_fe_hi 0.66 --td_combined_dyn_instr_thr_extreme 0.3 --td_combined_dyn_data_thr_extreme 0.2",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_w10k_thr_broadest":{
+      "_params":"Dynamic threshold: 10k window (fast), broadest. Depths fixed at suite max; balanced thr = nominal (0.7/0.5).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.7 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -32 --td_load_replay_thresh 0.5 --td_combined_dynamic_thresh 1 --td_combined_dyn_window 10000 --td_combined_dyn_fe_lo 0.33 --td_combined_dyn_fe_hi 0.66 --td_combined_dyn_instr_thr_extreme 0.1 --td_combined_dyn_data_thr_extreme 0.05",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_w1m_thr_broad":{
+      "_params":"Dynamic threshold: 1M window (slow), broad. Depths fixed at suite max; balanced thr = nominal (0.7/0.5).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.7 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -32 --td_load_replay_thresh 0.5 --td_combined_dynamic_thresh 1 --td_combined_dyn_window 1000000 --td_combined_dyn_fe_lo 0.33 --td_combined_dyn_fe_hi 0.66 --td_combined_dyn_instr_thr_extreme 0.3 --td_combined_dyn_data_thr_extreme 0.2",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_band_narrow_thr_broad":{
+      "_params":"Dynamic threshold: 100k, narrow band, broad. Depths fixed at suite max; balanced thr = nominal (0.7/0.5).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.7 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -32 --td_load_replay_thresh 0.5 --td_combined_dynamic_thresh 1 --td_combined_dyn_window 100000 --td_combined_dyn_fe_lo 0.4 --td_combined_dyn_fe_hi 0.6 --td_combined_dyn_instr_thr_extreme 0.3 --td_combined_dyn_data_thr_extreme 0.2",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_band_wide_thr_broadest":{
+      "_params":"Dynamic threshold: 100k, wide band, broadest. Depths fixed at suite max; balanced thr = nominal (0.7/0.5).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.7 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -32 --td_load_replay_thresh 0.5 --td_combined_dynamic_thresh 1 --td_combined_dyn_window 100000 --td_combined_dyn_fe_lo 0.25 --td_combined_dyn_fe_hi 0.75 --td_combined_dyn_instr_thr_extreme 0.1 --td_combined_dyn_data_thr_extreme 0.05",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_w10k_band_narrow_thr_mod":{
+      "_params":"Dynamic threshold: 10k + narrow band (most aggressive), moderate. Depths fixed at suite max; balanced thr = nominal (0.7/0.5).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.7 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -32 --td_load_replay_thresh 0.5 --td_combined_dynamic_thresh 1 --td_combined_dyn_window 10000 --td_combined_dyn_fe_lo 0.4 --td_combined_dyn_fe_hi 0.6 --td_combined_dyn_instr_thr_extreme 0.5 --td_combined_dyn_data_thr_extreme 0.35",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize. Configure baseline and counters.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "baseline",
+      "static_both",
+      "dyn_thr_none",
+      "dyn_thr_mod",
+      "dyn_thr_broad",
+      "dyn_thr_broadest",
+      "dyn_w10k_thr_mod",
+      "dyn_w1m_thr_mod",
+      "dyn_cumulative_thr_mod",
+      "dyn_band_narrow_thr_mod",
+      "dyn_band_wide_thr_mod",
+      "dyn_w10k_thr_broad",
+      "dyn_w10k_thr_broadest",
+      "dyn_w1m_thr_broad",
+      "dyn_band_narrow_thr_broad",
+      "dyn_band_wide_thr_broadest",
+      "dyn_w10k_band_narrow_thr_mod"
+    ],
+    "counters":[
+      "IPC",
+      "ICACHE_MISS",
+      "DCACHE_MISS_LD"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
