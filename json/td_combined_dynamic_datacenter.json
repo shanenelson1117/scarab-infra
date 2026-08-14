@@ -1,0 +1,209 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"mockingjay",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"td_combined_dynamic_datacenter",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. Must be built from the td-load-rrip-min-extrapolate branch (adds td_combined_dynamic_depth + per-class extreme depths td_combined_dyn_instr_extreme / td_combined_dyn_data_extreme).",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/shanen",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
+  "top_simpoint":true,
+  "_simulations":"Combined L2 dynamic-depth experiment with EXTREME depths. All configs run the combined policy; the balanced depths are the suite-wide max (instr -48, data -32) and thresholds are pinned (instr 0.7 / data 0.5). static_both holds both classes at the suite max always. The dyn_* configs bucket by fe_frac = fe_bound / (fe_bound + mem_bound) over a window: balanced -> both at the suite max; front-end-dominated -> instructions go DEEPER than the suite max (td_combined_dyn_instr_extreme) and data drop to basic; memory-dominated -> data go DEEPER than the suite max (td_combined_dyn_data_extreme) and instructions drop to basic. The suite max is only an average saturation point, so a strongly one-sided phase can justify more protection than it. The sweep varies how deep the dominant class goes in extreme windows (ext_none = same as suite max, i.e. deprioritize-only; ext_mod/deep/deeper = increasingly past it), plus adaptation speed and band width. Compare IPC / ICACHE_MISS / DCACHE_MISS_LD vs. baseline with plot_stat_change.py.",
+  "simulations":[
+    {
+      "suite":"datacenter",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"baseline = untouched L2. static_both = combined policy, both classes at suite max always (reference). dyn_* = dynamic combined policy; balanced window keeps both at the suite max (-48/-32), one-sided windows deprioritize the non-dominant class to basic and send the dominant class to its extreme depth (which may go past the suite max). Grid over window (10k/100k/1M/cumulative), balanced-band width (narrow .40-.60, medium .33-.66, wide .25-.75), and extreme depth (none=suite max, mod -64/-48, deep -96/-64, deeper -128/-96), plus a few corner combos.",
+  "configurations":{
+    "baseline":{
+      "_params":"Untouched machine (default L2 replacement policy).",
+      "params":"",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "static_both":{
+      "_params":"HEADLINE: instructions -48 AND data -32 together (both at their effective depth; non-zero-sum test).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_fe_rrip_min_rrpv -48 --td_load_rrip_extrapolate 0 --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -32",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_ext_none":{
+      "_params":"Dynamic: 100k, band .33-.66, extreme=suite max (deprioritize-only). Balanced=suite max (instr -48/data -32).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_fe_rrip_min_rrpv -48 --td_load_rrip_extrapolate 0 --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -32 --td_combined_dynamic_depth 1 --td_combined_dyn_window 100000 --td_combined_dyn_fe_lo 0.33 --td_combined_dyn_fe_hi 0.66 --td_combined_dyn_instr_extreme -48 --td_combined_dyn_data_extreme -32",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_ext_mod":{
+      "_params":"Dynamic: 100k, band .33-.66, moderate extreme. Balanced=suite max (instr -48/data -32).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_fe_rrip_min_rrpv -48 --td_load_rrip_extrapolate 0 --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -32 --td_combined_dynamic_depth 1 --td_combined_dyn_window 100000 --td_combined_dyn_fe_lo 0.33 --td_combined_dyn_fe_hi 0.66 --td_combined_dyn_instr_extreme -64 --td_combined_dyn_data_extreme -48",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_ext_deep":{
+      "_params":"Dynamic: 100k, band .33-.66, deep extreme. Balanced=suite max (instr -48/data -32).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_fe_rrip_min_rrpv -48 --td_load_rrip_extrapolate 0 --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -32 --td_combined_dynamic_depth 1 --td_combined_dyn_window 100000 --td_combined_dyn_fe_lo 0.33 --td_combined_dyn_fe_hi 0.66 --td_combined_dyn_instr_extreme -96 --td_combined_dyn_data_extreme -64",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_ext_deeper":{
+      "_params":"Dynamic: 100k, band .33-.66, deeper extreme. Balanced=suite max (instr -48/data -32).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_fe_rrip_min_rrpv -48 --td_load_rrip_extrapolate 0 --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -32 --td_combined_dynamic_depth 1 --td_combined_dyn_window 100000 --td_combined_dyn_fe_lo 0.33 --td_combined_dyn_fe_hi 0.66 --td_combined_dyn_instr_extreme -128 --td_combined_dyn_data_extreme -96",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_w10k_ext_mod":{
+      "_params":"Dynamic: 10k window (fast), moderate extreme. Balanced=suite max (instr -48/data -32).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_fe_rrip_min_rrpv -48 --td_load_rrip_extrapolate 0 --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -32 --td_combined_dynamic_depth 1 --td_combined_dyn_window 10000 --td_combined_dyn_fe_lo 0.33 --td_combined_dyn_fe_hi 0.66 --td_combined_dyn_instr_extreme -64 --td_combined_dyn_data_extreme -48",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_w1m_ext_mod":{
+      "_params":"Dynamic: 1M window (slow), moderate extreme. Balanced=suite max (instr -48/data -32).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_fe_rrip_min_rrpv -48 --td_load_rrip_extrapolate 0 --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -32 --td_combined_dynamic_depth 1 --td_combined_dyn_window 1000000 --td_combined_dyn_fe_lo 0.33 --td_combined_dyn_fe_hi 0.66 --td_combined_dyn_instr_extreme -64 --td_combined_dyn_data_extreme -48",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_cumulative_ext_mod":{
+      "_params":"Dynamic: cumulative (window 0), moderate extreme. Balanced=suite max (instr -48/data -32).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_fe_rrip_min_rrpv -48 --td_load_rrip_extrapolate 0 --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -32 --td_combined_dynamic_depth 1 --td_combined_dyn_window 0 --td_combined_dyn_fe_lo 0.33 --td_combined_dyn_fe_hi 0.66 --td_combined_dyn_instr_extreme -64 --td_combined_dyn_data_extreme -48",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_band_narrow_ext_mod":{
+      "_params":"Dynamic: 100k, narrow band .40-.60, moderate extreme. Balanced=suite max (instr -48/data -32).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_fe_rrip_min_rrpv -48 --td_load_rrip_extrapolate 0 --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -32 --td_combined_dynamic_depth 1 --td_combined_dyn_window 100000 --td_combined_dyn_fe_lo 0.4 --td_combined_dyn_fe_hi 0.6 --td_combined_dyn_instr_extreme -64 --td_combined_dyn_data_extreme -48",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_band_wide_ext_mod":{
+      "_params":"Dynamic: 100k, wide band .25-.75, moderate extreme. Balanced=suite max (instr -48/data -32).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_fe_rrip_min_rrpv -48 --td_load_rrip_extrapolate 0 --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -32 --td_combined_dynamic_depth 1 --td_combined_dyn_window 100000 --td_combined_dyn_fe_lo 0.25 --td_combined_dyn_fe_hi 0.75 --td_combined_dyn_instr_extreme -64 --td_combined_dyn_data_extreme -48",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_w10k_ext_deep":{
+      "_params":"Dynamic: 10k window (fast), deep extreme. Balanced=suite max (instr -48/data -32).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_fe_rrip_min_rrpv -48 --td_load_rrip_extrapolate 0 --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -32 --td_combined_dynamic_depth 1 --td_combined_dyn_window 10000 --td_combined_dyn_fe_lo 0.33 --td_combined_dyn_fe_hi 0.66 --td_combined_dyn_instr_extreme -96 --td_combined_dyn_data_extreme -64",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_w10k_ext_deeper":{
+      "_params":"Dynamic: 10k window (fast), deeper extreme. Balanced=suite max (instr -48/data -32).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_fe_rrip_min_rrpv -48 --td_load_rrip_extrapolate 0 --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -32 --td_combined_dynamic_depth 1 --td_combined_dyn_window 10000 --td_combined_dyn_fe_lo 0.33 --td_combined_dyn_fe_hi 0.66 --td_combined_dyn_instr_extreme -128 --td_combined_dyn_data_extreme -96",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_w1m_ext_deep":{
+      "_params":"Dynamic: 1M window (slow), deep extreme. Balanced=suite max (instr -48/data -32).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_fe_rrip_min_rrpv -48 --td_load_rrip_extrapolate 0 --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -32 --td_combined_dynamic_depth 1 --td_combined_dyn_window 1000000 --td_combined_dyn_fe_lo 0.33 --td_combined_dyn_fe_hi 0.66 --td_combined_dyn_instr_extreme -96 --td_combined_dyn_data_extreme -64",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_band_narrow_ext_deep":{
+      "_params":"Dynamic: 100k, narrow band, deep extreme. Balanced=suite max (instr -48/data -32).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_fe_rrip_min_rrpv -48 --td_load_rrip_extrapolate 0 --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -32 --td_combined_dynamic_depth 1 --td_combined_dyn_window 100000 --td_combined_dyn_fe_lo 0.4 --td_combined_dyn_fe_hi 0.6 --td_combined_dyn_instr_extreme -96 --td_combined_dyn_data_extreme -64",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_band_wide_ext_deeper":{
+      "_params":"Dynamic: 100k, wide band, deeper extreme. Balanced=suite max (instr -48/data -32).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_fe_rrip_min_rrpv -48 --td_load_rrip_extrapolate 0 --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -32 --td_combined_dynamic_depth 1 --td_combined_dyn_window 100000 --td_combined_dyn_fe_lo 0.25 --td_combined_dyn_fe_hi 0.75 --td_combined_dyn_instr_extreme -128 --td_combined_dyn_data_extreme -96",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "dyn_w10k_band_narrow_ext_mod":{
+      "_params":"Dynamic: 10k window + narrow band (most aggressive), moderate extreme. Balanced=suite max (instr -48/data -32).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_fe_rrip_min_rrpv -48 --td_load_rrip_extrapolate 0 --td_load_replay_thresh 0.5 --td_load_rrip_min_rrpv -32 --td_combined_dynamic_depth 1 --td_combined_dyn_window 10000 --td_combined_dyn_fe_lo 0.4 --td_combined_dyn_fe_hi 0.6 --td_combined_dyn_instr_extreme -64 --td_combined_dyn_data_extreme -48",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize. Configure baseline and counters.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "baseline",
+      "static_both",
+      "dyn_ext_none",
+      "dyn_ext_mod",
+      "dyn_ext_deep",
+      "dyn_ext_deeper",
+      "dyn_w10k_ext_mod",
+      "dyn_w1m_ext_mod",
+      "dyn_cumulative_ext_mod",
+      "dyn_band_narrow_ext_mod",
+      "dyn_band_wide_ext_mod",
+      "dyn_w10k_ext_deep",
+      "dyn_w10k_ext_deeper",
+      "dyn_w1m_ext_deep",
+      "dyn_band_narrow_ext_deep",
+      "dyn_band_wide_ext_deeper",
+      "dyn_w10k_band_narrow_ext_mod"
+    ],
+    "counters":[
+      "IPC",
+      "ICACHE_MISS",
+      "DCACHE_MISS_LD"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
