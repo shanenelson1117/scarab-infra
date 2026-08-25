@@ -1,0 +1,140 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"mockingjay",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"replay-force-mockingjay-spec06-dc",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation. This directory replaces ISO-based setups by mounting a local application folder (e.g., SPEC CPU2017) into the container during image build or runtime.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/scarab/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json' instead of the entire simpoints in 'workloads_db.json'",
+  "top_simpoint":true,
+  "_simulations":"A list of [suite, subsuite, workload, simpoint's cluster #, simulation type, warmup]. Available suite, subsuite, workloads, and each workload's available cluster_id and simulation_type are found in workloads/workloads_db.json. It runs all the simpoints if cluster_id is null and simulation type is one of 'exec', 'memtrace', 'pt'. When only 'suite' or 'suite'+'subsuite' is given and the rest are null, it launches simulations for all the workloads, all the simpoints if available, and in prioritized_mode (simulation type) in workloads/workloads_db.json. warmup can be null or smaller than the warmup of the trace available in workloads/workloads_db.json. The 'workload' field can also be a list of strings (e.g. ['gcc_r', 'mcf_r']) to run multiple specific workloads in a single entry, or an empty list [] to run all workloads (same as null).",
+  "simulations":[
+    {
+      "suite":"spec2006",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    },
+    {
+      "suite":"datacenter",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"scarab configurations to sweep. slurm_options passes extra arguments to sbatch (ignored for manual runner); '--mem' is no longer needed here as memory is scheduled per-simpoint automatically. memory_overhead_mb (optional, default 0) adds a fixed MB overhead on top of the per-simpoint base memory for configs that allocate extra Scarab structures. Options: https://slurm.schedmd.com/sbatch.html. NOTE: all configs replay the per-load membound CSVs written by the record run (experiment record-mockingjay-spec06-dc) via --td_load_dir; that record run must have completed first, using the same architecture/suites/simpoints so the trace-derived CSV paths match. Force-hit fires for a load whose recorded mean membound ratio is strictly greater than --td_load_replay_thresh, so higher thresh = fewer forced hits; thresh 1.0 forces none (== baseline).",
+  "configurations":{
+    "force_0p3":{
+      "params":"--td_load_replay 1 --td_load_dir /home/shanen/td_load_records/record-mockingjay-spec06-dc --td_load_replay_key pc --td_load_replay_thresh 0.3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "force_0p4":{
+      "params":"--td_load_replay 1 --td_load_dir /home/shanen/td_load_records/record-mockingjay-spec06-dc --td_load_replay_key pc --td_load_replay_thresh 0.4",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "force_0p5":{
+      "params":"--td_load_replay 1 --td_load_dir /home/shanen/td_load_records/record-mockingjay-spec06-dc --td_load_replay_key pc --td_load_replay_thresh 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "force_0p6":{
+      "params":"--td_load_replay 1 --td_load_dir /home/shanen/td_load_records/record-mockingjay-spec06-dc --td_load_replay_key pc --td_load_replay_thresh 0.6",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "force_0p7":{
+      "params":"--td_load_replay 1 --td_load_dir /home/shanen/td_load_records/record-mockingjay-spec06-dc --td_load_replay_key pc --td_load_replay_thresh 0.7",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "force_0p8":{
+      "params":"--td_load_replay 1 --td_load_dir /home/shanen/td_load_records/record-mockingjay-spec06-dc --td_load_replay_key pc --td_load_replay_thresh 0.8",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "force_0p9":{
+      "params":"--td_load_replay 1 --td_load_dir /home/shanen/td_load_records/record-mockingjay-spec06-dc --td_load_replay_key pc --td_load_replay_thresh 0.9",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "force_1p0":{
+      "params":"--td_load_replay 1 --td_load_dir /home/shanen/td_load_records/record-mockingjay-spec06-dc --td_load_replay_key pc --td_load_replay_thresh 1.0",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize. Configure baseline and counters.",
+  "visualize":{
+    "baseline":"force_1p0",
+    "configs":[
+      "force_0p3",
+      "force_0p4",
+      "force_0p5",
+      "force_0p6",
+      "force_0p7",
+      "force_0p8",
+      "force_0p9"
+    ],
+    "counters":[
+      "IPC"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs. collection_baseline specifies which config's MaxRSS is recorded in the mode-specific base_memory_mb_by_mode fields by ./sci --collect-mem (defaults to visualize.baseline). fallback_mb is the --mem limit used for workloads or simpoints that have no measured base_memory for the requested simulation mode yet; set it conservatively high to avoid OOM kills on the first run.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":16384
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze. It diffs stats and also compares baseline-vs-target Scarab binary hashes; when hashes differ it runs git diff/log in scarab_path and includes that context in reports and AI prompt. analyzer_cli_cmd examples: codex (auto-runs as non-interactive codex exec -), codex exec -, gemini -p \"@{prompt_file}\", or claude (auto-runs as non-interactive claude -p via stdin). Supported placeholders: {prompt_file}, {summary_file}, {report_file}.",
+  "perf_analyze":{
+    "baseline":"force_1p0",
+    "counters":[
+      "IPC"
+    ],
+    "_stat_groups":"Optional list of Scarab stat groups to compare: bp, core, fetch, inst, l2l1pref, memory, power, pref, stream.",
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "_compare_all_stats":"When true, compare all stats in collected_stats.csv that match stat_groups (or all stats if stat_groups is empty). Drift trigger still uses counters[0].",
+    "compare_all_stats":false,
+    "_drift_top_workloads":"How many top drifting workloads (by trigger counter abs delta) to expand in deterministic/AI reports.",
+    "drift_top_workloads":5,
+    "_drift_top_simpoints":"How many top drifting simpoints per selected workload to expand (ranked by abs(delta_pct) * baseline weight).",
+    "drift_top_simpoints":5,
+    "_prompt_budget_tokens":"Approximate max tokens allowed for analyzer prompt assembly.",
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "_analyzer_cli_cmd":"CLI command for LLM-based analysis. Examples: codex, codex exec -, gemini -p \"@{prompt_file}\", claude",
+    "analyzer_cli_cmd":"codex"
+  }
+}
