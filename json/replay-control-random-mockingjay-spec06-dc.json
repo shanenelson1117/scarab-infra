@@ -2,9 +2,9 @@
   "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
   "descriptor_type":"simulation",
   "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
-  "architecture":"kmhv3",
+  "architecture":"mockingjay",
   "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
-  "experiment":"basseline-kmhv3",
+  "experiment":"replay-control-random-mockingjay-spec06-dc",
   "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
   "workload_manager":"manual",
   "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
@@ -23,23 +23,67 @@
   "simulations":[
     {
       "suite":"spec2006",
-      "subsuite":"rate_int",
+      "subsuite":null,
       "workload":null,
       "cluster_id":null,
       "simulation_type":null,
-      "warmup":20000000
+      "warmup":null
+    },
+    {
+      "suite":"datacenter",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
     }
   ],
-  "_configurations":"scarab configurations to sweep. slurm_options passes extra arguments to sbatch (ignored for manual runner); '--mem' is no longer needed here as memory is scheduled per-simpoint automatically. memory_overhead_mb (optional, default 0) adds a fixed MB overhead on top of the per-simpoint base memory for configs that allocate extra Scarab structures. Options: https://slurm.schedmd.com/sbatch.html",
+  "_configurations":"Randomized equal-cardinality control for the membound force-hit sweep. Each config replays the SAME record CSVs (experiment record-mockingjay-spec06-dc) via --td_load_dir, but with --td_load_replay_random 1: instead of force-hitting the membound keys (mean ratio > thresh), it force-hits a seeded-random set of the SAME cardinality N (N = #keys above thresh), drawn from all recorded keys of that simpoint. N is derived in-sim from the record CSV + thresh, so it matches the membound run's marked-set size per simpoint WITHOUT re-running the membound replay. Pair each rand_X with the matching force_X from replay-force-mockingjay-spec06-dc to isolate the value of the membound selection. Change --td_load_replay_seed for additional random draws.",
   "configurations":{
-    "baseline":{
-      "params":"",
+    "rand_0p3":{
+      "params":"--td_load_replay 1 --td_load_replay_random 1 --td_load_replay_seed 1 --td_load_dir /home/shanen/td_load_records/record-mockingjay-spec06-dc --td_load_replay_key pc --td_load_replay_thresh 0.3",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
     },
-    "no_fdip":{
-      "params":"--fdip_enable 0",
+    "rand_0p4":{
+      "params":"--td_load_replay 1 --td_load_replay_random 1 --td_load_replay_seed 1 --td_load_dir /home/shanen/td_load_records/record-mockingjay-spec06-dc --td_load_replay_key pc --td_load_replay_thresh 0.4",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "rand_0p5":{
+      "params":"--td_load_replay 1 --td_load_replay_random 1 --td_load_replay_seed 1 --td_load_dir /home/shanen/td_load_records/record-mockingjay-spec06-dc --td_load_replay_key pc --td_load_replay_thresh 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "rand_0p6":{
+      "params":"--td_load_replay 1 --td_load_replay_random 1 --td_load_replay_seed 1 --td_load_dir /home/shanen/td_load_records/record-mockingjay-spec06-dc --td_load_replay_key pc --td_load_replay_thresh 0.6",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "rand_0p7":{
+      "params":"--td_load_replay 1 --td_load_replay_random 1 --td_load_replay_seed 1 --td_load_dir /home/shanen/td_load_records/record-mockingjay-spec06-dc --td_load_replay_key pc --td_load_replay_thresh 0.7",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "rand_0p8":{
+      "params":"--td_load_replay 1 --td_load_replay_random 1 --td_load_replay_seed 1 --td_load_dir /home/shanen/td_load_records/record-mockingjay-spec06-dc --td_load_replay_key pc --td_load_replay_thresh 0.8",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "rand_0p9":{
+      "params":"--td_load_replay 1 --td_load_replay_random 1 --td_load_replay_seed 1 --td_load_dir /home/shanen/td_load_records/record-mockingjay-spec06-dc --td_load_replay_key pc --td_load_replay_thresh 0.9",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "rand_1p0":{
+      "params":"--td_load_replay 1 --td_load_replay_random 1 --td_load_replay_seed 1 --td_load_dir /home/shanen/td_load_records/record-mockingjay-spec06-dc --td_load_replay_key pc --td_load_replay_thresh 1.0",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
@@ -51,17 +95,18 @@
   },
   "_visualize":"Visualization settings for ./sci --visualize. Configure baseline and counters.",
   "visualize":{
-    "baseline":"actual",
+    "baseline":"rand_1p0",
     "configs":[
-      "perfect_l1d"
+      "rand_0p3",
+      "rand_0p4",
+      "rand_0p5",
+      "rand_0p6",
+      "rand_0p7",
+      "rand_0p8",
+      "rand_0p9"
     ],
     "counters":[
-      "IPC",
-        [
-          "BR_EXEC_RESOLVE_COUNT",
-          "BR_EXEC_RESOLVE_TOTAL",
-          "BR_EXEC_OPERAND_WAIT"
-        ]
+      "IPC"
     ]
   },
   "_mem":"Memory scheduling and collection settings for Slurm jobs. collection_baseline specifies which config's MaxRSS is recorded in the mode-specific base_memory_mb_by_mode fields by ./sci --collect-mem (defaults to visualize.baseline). fallback_mb is the --mem limit used for workloads or simpoints that have no measured base_memory for the requested simulation mode yet; set it conservatively high to avoid OOM kills on the first run.",
@@ -71,16 +116,14 @@
   },
   "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze. It diffs stats and also compares baseline-vs-target Scarab binary hashes; when hashes differ it runs git diff/log in scarab_path and includes that context in reports and AI prompt. analyzer_cli_cmd examples: codex (auto-runs as non-interactive codex exec -), codex exec -, gemini -p \"@{prompt_file}\", or claude (auto-runs as non-interactive claude -p via stdin). Supported placeholders: {prompt_file}, {summary_file}, {report_file}.",
   "perf_analyze":{
-    "baseline":"icache_32k",
+    "baseline":"rand_1p0",
     "counters":[
-      "IPC",
-      "ICACHE_MISS"
+      "IPC"
     ],
     "_stat_groups":"Optional list of Scarab stat groups to compare: bp, core, fetch, inst, l2l1pref, memory, power, pref, stream.",
     "stat_groups":[
-      "bp",
-      "fetch",
-      "core"
+      "core",
+      "memory"
     ],
     "_compare_all_stats":"When true, compare all stats in collected_stats.csv that match stat_groups (or all stats if stat_groups is empty). Drift trigger still uses counters[0].",
     "compare_all_stats":false,
