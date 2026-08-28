@@ -16,19 +16,11 @@
   "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
   "scarab_build":"opt",
   "_traces_dir":"The local directory containing all simpointed traces",
-  "traces_dir":"/mnt/storage/traces/scarab/",
+  "traces_dir":"/mnt/storage/traces/shanen/",
   "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
   "top_simpoint":true,
   "_simulations":"FDIP utility-driven prefetching (UDP) study on SPEC CPU2006. Compares FDIP with UDP throttling on vs. off.",
   "simulations":[
-    {
-      "suite":"spec2006",
-      "subsuite":null,
-      "workload":null,
-      "cluster_id":null,
-      "simulation_type":null,
-      "warmup":null
-    },
     {
       "suite":"datacenter",
       "subsuite":null,
