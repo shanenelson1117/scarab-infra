@@ -1,0 +1,185 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"mockingjay",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"td_offpath_l2_mockingjay",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. REQUIRES a build containing REPL_MOCKINGJAY (--mlc_cache_repl_policy 22 and the --mockingjay_* knobs); a stock build will silently fall back on an unknown ordinal. That same build also contains the mlc_fill_line ordering fix (victim selection + writeback now run BEFORE cache_insert, as they already did in l1_fill_line), which changes MLC writeback traffic and per-line fill metadata for EVERY L2 replacement policy -- so the baseline / static_i48d32 / setduel_g8 numbers here are NOT comparable to the earlier td_offpath_l2 run and must be re-baselined within this experiment.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/shanen",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
+  "top_simpoint":true,
+  "_simulations":"Offshoot of td_offpath_l2 that puts the marked-RRIP L2 configs head-to-head with (a) the stock RRIP-family policies SRRIP/DRRIP/SHIP and (b) Mockingjay (HPCA'22), all on the L2 (MLC) via --mlc_cache_repl_policy <ordinal> (the Repl_Policy enum in src/libs/cache_lib.h). Mockingjay predicts a per-PC reuse distance and keeps a per-line Estimated Time Remaining, evicting the largest |ETR|; it also declines to allocate a fill whose predicted reuse beats every resident line. Its sampler and signature widths are derived from CACHE CAPACITY using the paper's LLC-oriented formulas, which undersize badly on this 256KB 8-way L2 -- log2(sampled sets) = log2(bytes)-16 = 2 (only 4 of 512 sets sampled, 320 sampler entries) and signature width = log2(bytes)-10 = 8 bits (256 RDP entries), versus 32 sampled sets / 11 bits on the paper's 2MB 16-way LLC. The mj_samp* / mj_sig* configs sweep those two axes independently and mj_l2_tuned combines them, so a weak mj_default can be attributed to undersizing rather than to the policy. mj_*_nobypass isolates the bypass contribution (and is the safe fallback if the bypass wiring in mlc_fill_line misbehaves). Compare IPC / MLC_DEMAND_MISS / DCACHE_MISS_LD vs. baseline.",
+  "simulations":[
+    {
+      "suite":"datacenter",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"baseline = untouched L2 (default MLC_CACHE_REPL_POLICY = 0 = REPL_TRUE_LRU). static_i48d32 / setduel_g8 are carried over unchanged from td_offpath_l2 as the marked-RRIP reference points. repl_* force one stock policy on the L2 (16=SRRIP, 18=DRRIP, 19=SHIP). mj_* force Mockingjay (22): mj_default uses the capacity-derived sizing (log2_sampled_sets=2, pc_signature_bits=8); mj_samp{4,6} widen the sampler to 16 / 64 sampled sets (1280 / 5120 entries); mj_sig{11,14} widen the RDP to 2K / 16K entries (11 = the paper's LLC width); mj_l2_tuned combines the widest of both. mj_nobypass and mj_l2_tuned_nobypass repeat those two with --mockingjay_bypass 0 so the bypass contribution can be separated from victim selection. On this L2 (8-way, history 8, granularity 8) the derived scale is INF_RD=63, INF_ETR=7, MAX_RD=41.",
+  "configurations":{
+    "baseline":{
+      "_params":"Untouched machine (default L2 replacement policy, REPL_TRUE_LRU).",
+      "params":"",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "static_i48d32":{
+      "_params":"Carried over from td_offpath_l2: combined static at the balanced i48d32 bin (instr -48, data -32, both at suite max); no dueling.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_rrip_extrapolate 0 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -48 --td_load_rrip_min_rrpv -32",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "setduel_g8":{
+      "_params":"Carried over from td_offpath_l2: set dueling, window 100k, 8 leader sets per group (24 total leaders).",
+      "params":"--td_combined_on_mlc 1 --td_combined_set_duel 1 --td_combined_duel_window 100000 --td_fe_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_rrip_extrapolate 0 --td_load_replay_thresh 0.5 --td_combined_duel_sets_per_group 8",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "repl_srrip":{
+      "_params":"REPL_SRRIP (16) -- static re-reference interval prediction. The unmarked parent of the td_* marked-RRIP configs.",
+      "params":"--mlc_cache_repl_policy 16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "repl_drrip":{
+      "_params":"REPL_DRRIP (18) -- dynamic (set-dueling) RRIP. The stock-policy counterpart to setduel_g8.",
+      "params":"--mlc_cache_repl_policy 18",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "repl_ship":{
+      "_params":"REPL_SHIP (19) -- signature-based hit predictor. The closest stock analogue to Mockingjay (PC-signature-driven insertion), so the mj_* gain over this isolates reuse-distance prediction from plain signature-based insertion.",
+      "params":"--mlc_cache_repl_policy 19",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "mj_default":{
+      "_params":"REPL_MOCKINGJAY (22) with the paper's capacity-derived sizing: 4 sampled sets of 512 (320 sampler entries), 8-bit signature (256 RDP entries), bypass on. The reference point -- expect it to be sampler-starved on a 256KB L2.",
+      "params":"--mlc_cache_repl_policy 22",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":64
+    },
+    "mj_nobypass":{
+      "_params":"mj_default with fill bypass disabled -- victim selection (largest |ETR|) only. Isolates how much of Mockingjay's effect comes from declining to allocate, and is the fallback if the bypass path in mlc_fill_line misbehaves.",
+      "params":"--mlc_cache_repl_policy 22 --mockingjay_bypass 0",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":64
+    },
+    "mj_samp4":{
+      "_params":"Sampler axis: 16 sampled sets of 512 (1280 sampler entries), signature left at the derived 8 bits.",
+      "params":"--mlc_cache_repl_policy 22 --mockingjay_log2_sampled_sets 4",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":64
+    },
+    "mj_samp6":{
+      "_params":"Sampler axis: 64 sampled sets of 512 (5120 sampler entries), signature left at the derived 8 bits.",
+      "params":"--mlc_cache_repl_policy 22 --mockingjay_log2_sampled_sets 6",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":64
+    },
+    "mj_sig11":{
+      "_params":"Signature axis: 11-bit signature (2048 RDP entries) -- the width the paper's 2MB LLC derives -- with the sampler left at the derived 4 sets.",
+      "params":"--mlc_cache_repl_policy 22 --mockingjay_pc_signature_bits 11",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":64
+    },
+    "mj_sig14":{
+      "_params":"Signature axis: 14-bit signature (16384 RDP entries), sampler left at the derived 4 sets. Tests whether 8-bit signature aliasing is the binding constraint.",
+      "params":"--mlc_cache_repl_policy 22 --mockingjay_pc_signature_bits 14",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":64
+    },
+    "mj_l2_tuned":{
+      "_params":"Both axes widened: 64 sampled sets + 14-bit signature, bypass on. The upper bound for what sizing can buy on this L2.",
+      "params":"--mlc_cache_repl_policy 22 --mockingjay_log2_sampled_sets 6 --mockingjay_pc_signature_bits 14",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":64
+    },
+    "mj_l2_tuned_nobypass":{
+      "_params":"mj_l2_tuned with fill bypass disabled -- bypass contribution measured at the tuned sizing rather than the starved default.",
+      "params":"--mlc_cache_repl_policy 22 --mockingjay_log2_sampled_sets 6 --mockingjay_pc_signature_bits 14 --mockingjay_bypass 0",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":64
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Visualization settings for ./sci --visualize. IPC is the target-only (post-warmup, Periodic_*) figure, matching td_offpath_l2 -- do NOT mix it with the Cumulative_*-derived IPC_total. MLC_DEMAND_MISS is the L2 demand-miss count this experiment is actually steering.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "baseline",
+      "static_i48d32",
+      "setduel_g8",
+      "repl_srrip",
+      "repl_drrip",
+      "repl_ship",
+      "mj_default",
+      "mj_nobypass",
+      "mj_samp4",
+      "mj_samp6",
+      "mj_sig11",
+      "mj_sig14",
+      "mj_l2_tuned",
+      "mj_l2_tuned_nobypass"
+    ],
+    "counters":[
+      "IPC",
+      "MLC_DEMAND_MISS",
+      "DCACHE_MISS_LD"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}

@@ -52,20 +52,6 @@
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
-    },
-    "thresh_70_d48":{
-      "_params":"L2 FE policy, no extrapolation, threshold 0.7, depth -48.",
-      "params":"--td_fe_rrip_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_fe_rrip_min_rrpv -48 --td_fe_rrip_thresh 0.7",
-      "binary":"scarab_current",
-      "slurm_options":"",
-      "memory_overhead_mb":512
-    },
-    "rrip_min_neg32_noextrap":{
-      "_params":"Extrapolate to min RRPV -64, anchor 0.5.",
-      "params":"--td_load_rrip_on_mlc 1 --td_load_rrip_mark 1 --td_load_rrip_extrapolate 0 --td_load_rrip_min_rrpv -32 --td_load_rrip_extrap_anchor 0.5",
-      "binary":"scarab_current",
-      "slurm_options":"",
-      "memory_overhead_mb":512
     }
   },
   "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
