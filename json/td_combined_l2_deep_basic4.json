@@ -1,0 +1,105 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"mockingjay",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"td_combined_l2_deep_basic4",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. REQUIRES the build that adds --marked_rrip_basic_rrpv; on an older build the flag is unknown and these configs would silently be identical to their td_combined_l2_deep twins. Must be the SAME build used for td_combined_l2_deep so the two runs splice.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/shanen",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
+  "top_simpoint":true,
+  "_simulations":"Three configs lifted from td_combined_l2_deep (depth_i72d48, instr_only_i96, data_only_d64) re-run with UNMARKED lines inserted at the highest possible RRPV: --marked_rrip_basic_rrpv 4. 4 is RRIP_DISTANT_VAL, the value srrip_update_evict matches on, so an unmarked line is evict-on-arrival rather than the default 3 (one aging round above the floor). marked_rrip_basic_rrpv() clamps at 4, so this is the maximum; anything higher could never satisfy the exact-equality eviction test and would age forever. The point is to widen the marked/unmarked gap from the DEMOTION side instead of by protecting marked lines harder -- the lever that still works if the depth axis has saturated. Each config keeps the name of its td_combined_l2_deep twin plus a _basic4 suffix, so both CSVs can be handed to plot_stat_change_multi.py at once and every config appears distinctly (that script merges by config name and silently keeps only the first occurrence of a duplicate).",
+  "simulations":[
+    {
+      "suite":"datacenter",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"baseline is byte-identical to td_combined_l2_deep / td_combined_l2_resweep (L2 tree-PLRU, --mlc_cache_repl_policy 21) so all three runs share a reference; it runs no marked policy, so --marked_rrip_basic_rrpv is deliberately absent there. Each *_basic4 config is a one-flag delta from its twin in td_combined_l2_deep. CAVEAT when reading these: basic 4 is not a clean one-way knob. Because srrip_update_evict only ages when NO line sits at RRIP_DISTANT_VAL, a set holding unmarked lines at 4 yields a victim with zero aging -- so raising basic also SLOWS the aging clock, which indirectly deepens the protection of the marked lines on top of demoting the unmarked ones. Read a gain here as the combined effect, not as isolated demotion. NOTE also that with basic 4 a class-isolated config becomes close to a hard partition: instr_only_i96_basic4 pins instruction lines at -96 while every data line is evict-on-arrival, and data_only_d64_basic4 is the mirror -- these are near single-class L2s, not subtle variants.",
+  "configurations":{
+    "baseline":{
+      "_params":"REPL_PLRU_TREE (21) on the L2 -- same baseline as td_combined_l2_deep and td_combined_l2_resweep.",
+      "params":"--mlc_cache_repl_policy 21",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "depth_i72d48_basic4":{
+      "_params":"depth_i72d48 (1.5x) with unmarked lines evict-on-arrival. Both classes still gated at the nominal 0.7 / 0.5, so this is the general case: qualifying lines protected, everything else discarded first.",
+      "params":"--td_combined_on_mlc 1 --marked_rrip_basic_rrpv 4 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -72 --td_load_rrip_min_rrpv -48",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "instr_only_i96_basic4":{
+      "_params":"instr_only_i96 with unmarked lines evict-on-arrival. Instruction lines above the FE-bound threshold pin at -96; the data class is off (--td_load_replay_thresh 1.0) so EVERY data line now inserts evict-on-arrival. Approximates an instruction-only L2.",
+      "params":"--td_combined_on_mlc 1 --marked_rrip_basic_rrpv 4 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 1.0 --td_fe_rrip_min_rrpv -96 --td_load_rrip_min_rrpv -64",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "data_only_d64_basic4":{
+      "_params":"data_only_d64 with unmarked lines evict-on-arrival. Mirror of the above: membound data lines pin at -64, the instruction class is off (--td_fe_rrip_thresh 1.0) so every instruction line is evict-on-arrival. Approximates a data-only L2.",
+      "params":"--td_combined_on_mlc 1 --marked_rrip_basic_rrpv 4 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 1.0 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -96 --td_load_rrip_min_rrpv -64",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Same counters as td_combined_l2_deep so the runs plot together. 'IPC' here is the TARGET-ONLY figure (Periodic_*), which is also plot_stat_change_multi.py's default; pass --full-sim there for the Cumulative_* figure.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "baseline",
+      "depth_i72d48_basic4",
+      "instr_only_i96_basic4",
+      "data_only_d64_basic4"
+    ],
+    "counters":[
+      "IPC",
+      "MLC_DEMAND_MISS",
+      "MLC_FILL_DIRTY"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
