@@ -1,0 +1,169 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"mockingjay",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"td_combined_llc_duel",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. REQUIRES the build with the LLC three-arm duel (--td_combined_l1_set_duel and the td_combined_l1_duel_* knobs) AND the earlier fix that added TD_COMBINED_ON_L1 to the topdown measurement gates. Without the latter no fraction is ever measured at the LLC, every line inserts at basic, and every config here reads identically.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/shanen",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
+  "top_simpoint":true,
+  "_simulations":"Explores the three-arm set duel on the combined LLC policy. Arms: DEPTH (instruction pinned at -32, data OFF / -16 / -32), THRESH (0.5 vs 0.7 applied to both class gates together), BASIC (unmarked insertion RRPV 2 / 3 / 4). Group 0 always runs the incumbent so ties hold it, every other group is a one-coordinate probe off it, and each window the winning group moves exactly that coordinate. Two questions. (1) WHICH ARMS EARN THEIR SETS -- arm_* enable each subset; every arm costs leader sets that run a non-selected policy, so an arm that never wins is pure overhead. Leader totals at 16 sets/group on 2048 sets: all three 6 groups = 96 sets (4.7%), depth-only 3 = 48 (2.3%), depth+basic 5 = 80 (3.9%), none 1 = 16 (0.8%). (2) WHICH SELECTION METRIC -- metric 0 minimises demand misses on the leader sets (the classic DRRIP criterion), metric 1 maximises PROTECTED HITS, counting only hits on lines that were marked at insert. Metric 1 asks 'is the protection I bought being reused' rather than 'did this arm miss least', and the two genuinely disagree: an arm that marks very few lines can score well on protected hits while missing more overall, so metric 1 should favour narrower, more confident marking. Every arm combination is run under both metrics. static_i32d16 is the no-duel control at the incumbent's seed configuration.",
+  "simulations":[
+    {
+      "suite":"datacenter",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"baseline is byte-identical to td_combined_llc_data / _instr (LLC tree-PLRU, --l1_cache_repl_policy 21) so all the LLC runs share a reference. Naming: arm_<arms>_m<metric>; d=depth, t=thresh, b=basic. A disabled arm drops its probe groups AND pins its coordinate -- depth to the static --td_fe_rrip_min_rrpv / --td_load_rrip_min_rrpv, threshold to the static gates, basic to --marked_rrip_basic_rrpv. Every config therefore also carries those static values, which is what the disabled arms fall back to; they are set to the duel's own seed point (instr -32, data -16, gates 0.7 / 0.5, basic 3) so enabling an arm changes only what varies, never the starting point. Window is 100k retired instructions throughout.",
+  "configurations":{
+    "baseline":{
+      "_params":"LLC tree-PLRU (REPL_PLRU_TREE, 21). Shared reference with the other LLC runs.",
+      "params":"--l1_cache_repl_policy 21",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "static_i32d16":{
+      "_params":"No-duel control at the duel's seed configuration: instr -32, data -16, gates 0.7 / 0.5, basic 3. Everything below must beat this to justify spending leader sets at all.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -16 --marked_rrip_basic_rrpv 3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "arm_d_m0":{
+      "_params":"DEPTH arm only, metric = demand misses. 3 groups, 48 leader sets (2.3%).",
+      "params":"--td_combined_on_l1 1 --td_combined_l1_set_duel 1 --td_combined_l1_duel_depth_axis 1 --td_combined_l1_duel_thresh_axis 0 --td_combined_l1_duel_basic_axis 0 --td_combined_l1_duel_metric 0 --td_combined_l1_duel_window 100000 --td_combined_l1_duel_sets_per_group 16 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -16 --marked_rrip_basic_rrpv 3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "arm_d_m1":{
+      "_params":"DEPTH arm only, metric = protected hits.",
+      "params":"--td_combined_on_l1 1 --td_combined_l1_set_duel 1 --td_combined_l1_duel_depth_axis 1 --td_combined_l1_duel_thresh_axis 0 --td_combined_l1_duel_basic_axis 0 --td_combined_l1_duel_metric 1 --td_combined_l1_duel_window 100000 --td_combined_l1_duel_sets_per_group 16 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -16 --marked_rrip_basic_rrpv 3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "arm_dt_m0":{
+      "_params":"DEPTH + THRESH, metric = demand misses. 4 groups, 64 leader sets (3.1%).",
+      "params":"--td_combined_on_l1 1 --td_combined_l1_set_duel 1 --td_combined_l1_duel_depth_axis 1 --td_combined_l1_duel_thresh_axis 1 --td_combined_l1_duel_basic_axis 0 --td_combined_l1_duel_metric 0 --td_combined_l1_duel_window 100000 --td_combined_l1_duel_sets_per_group 16 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -16 --marked_rrip_basic_rrpv 3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "arm_dt_m1":{
+      "_params":"DEPTH + THRESH, metric = protected hits. The pairing where metric 1 should bite hardest: raising the gate marks fewer lines, which hurts raw misses but can raise the protected-hit rate.",
+      "params":"--td_combined_on_l1 1 --td_combined_l1_set_duel 1 --td_combined_l1_duel_depth_axis 1 --td_combined_l1_duel_thresh_axis 1 --td_combined_l1_duel_basic_axis 0 --td_combined_l1_duel_metric 1 --td_combined_l1_duel_window 100000 --td_combined_l1_duel_sets_per_group 16 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -16 --marked_rrip_basic_rrpv 3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "arm_db_m0":{
+      "_params":"DEPTH + BASIC, metric = demand misses. 5 groups, 80 leader sets (3.9%).",
+      "params":"--td_combined_on_l1 1 --td_combined_l1_set_duel 1 --td_combined_l1_duel_depth_axis 1 --td_combined_l1_duel_thresh_axis 0 --td_combined_l1_duel_basic_axis 1 --td_combined_l1_duel_metric 0 --td_combined_l1_duel_window 100000 --td_combined_l1_duel_sets_per_group 16 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -16 --marked_rrip_basic_rrpv 3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "arm_db_m1":{
+      "_params":"DEPTH + BASIC, metric = protected hits.",
+      "params":"--td_combined_on_l1 1 --td_combined_l1_set_duel 1 --td_combined_l1_duel_depth_axis 1 --td_combined_l1_duel_thresh_axis 0 --td_combined_l1_duel_basic_axis 1 --td_combined_l1_duel_metric 1 --td_combined_l1_duel_window 100000 --td_combined_l1_duel_sets_per_group 16 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -16 --marked_rrip_basic_rrpv 3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "arm_dtb_m0":{
+      "_params":"All three arms, metric = demand misses. 6 groups, 96 leader sets (4.7%) -- the full mechanism.",
+      "params":"--td_combined_on_l1 1 --td_combined_l1_set_duel 1 --td_combined_l1_duel_depth_axis 1 --td_combined_l1_duel_thresh_axis 1 --td_combined_l1_duel_basic_axis 1 --td_combined_l1_duel_metric 0 --td_combined_l1_duel_window 100000 --td_combined_l1_duel_sets_per_group 16 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -16 --marked_rrip_basic_rrpv 3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "arm_dtb_m1":{
+      "_params":"All three arms, metric = protected hits.",
+      "params":"--td_combined_on_l1 1 --td_combined_l1_set_duel 1 --td_combined_l1_duel_depth_axis 1 --td_combined_l1_duel_thresh_axis 1 --td_combined_l1_duel_basic_axis 1 --td_combined_l1_duel_metric 1 --td_combined_l1_duel_window 100000 --td_combined_l1_duel_sets_per_group 16 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -16 --marked_rrip_basic_rrpv 3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "arm_dtb_m0_g8":{
+      "_params":"All three arms, misses, 8 sets per group = 48 leader sets (2.3%) instead of 96. Halves the sampling tax so more followers cash in the winner; noisier per-group scores. Pairs with arm_dtb_m0 to separate 'the arms help' from 'the leader tax hurts'.",
+      "params":"--td_combined_on_l1 1 --td_combined_l1_set_duel 1 --td_combined_l1_duel_depth_axis 1 --td_combined_l1_duel_thresh_axis 1 --td_combined_l1_duel_basic_axis 1 --td_combined_l1_duel_metric 0 --td_combined_l1_duel_window 100000 --td_combined_l1_duel_sets_per_group 8 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -16 --marked_rrip_basic_rrpv 3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "arm_dtb_m0_w20k":{
+      "_params":"All three arms, misses, 20k-instruction window instead of 100k. Coordinate descent moves one axis per window, so a shorter window converges faster but on noisier evidence -- with 3 arms it takes several windows to traverse the space at all.",
+      "params":"--td_combined_on_l1 1 --td_combined_l1_set_duel 1 --td_combined_l1_duel_depth_axis 1 --td_combined_l1_duel_thresh_axis 1 --td_combined_l1_duel_basic_axis 1 --td_combined_l1_duel_metric 0 --td_combined_l1_duel_window 20000 --td_combined_l1_duel_sets_per_group 16 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -16 --marked_rrip_basic_rrpv 3",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"'IPC' is the TARGET-ONLY figure (Periodic_*), matching plot_stat_change_multi.py's default; pass --full-sim for the Cumulative_* figure. The two ONPATH splits matter here because the depth arm trades the classes against each other -- data OFF / -16 / -32 at fixed instruction -32 -- so L1_MISS_ONPATH_IFETCH and L1_MISS_ONPATH_DFETCH show which side the duel settled on, which the total cannot. Note 'L1_*' is Scarab's LLC naming, not the L1 data cache (DCACHE_*). When comparing m0 against m1, expect the metric to change WHERE the duel lands rather than how well it duels: metric 1 should push toward narrower marking, so look for it trading a small IFETCH/DFETCH miss increase for better IPC (or not, which is equally informative).",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "baseline",
+      "static_i32d16",
+      "arm_d_m0",
+      "arm_d_m1",
+      "arm_dt_m0",
+      "arm_dt_m1",
+      "arm_db_m0",
+      "arm_db_m1",
+      "arm_dtb_m0",
+      "arm_dtb_m1",
+      "arm_dtb_m0_g8",
+      "arm_dtb_m0_w20k"
+    ],
+    "counters":[
+      "IPC",
+      "L1_MISS_ONPATH_IFETCH",
+      "L1_MISS_ONPATH_DFETCH"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
