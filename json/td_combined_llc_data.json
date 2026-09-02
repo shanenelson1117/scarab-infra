@@ -19,7 +19,7 @@
   "traces_dir":"/mnt/storage/traces/shanen",
   "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
   "top_simpoint":true,
-  "_simulations":"First sweep of the COMBINED marked-RRPV policy on the LLC (--td_combined_on_l1 1; Scarab's l1_* cache = 2MB, 16-way, 2048 sets). Deliberately DATA-CENTRIC: with a 256KB L2 in front of it the instruction working set is expected to be largely captured before the LLC, so instruction lines arriving here should be rare and the front-end-bound signal correspondingly thin. Every config therefore disables the instruction class (--td_fe_rrip_thresh 1.0 -- the gate is 'fraction > thresh' and a fraction cannot exceed 1.0, so nothing qualifies and instruction lines insert at basic) EXCEPT instr_on_i16d16, which turns it back on purely to test that assumption; if it beats data_d16 the premise is wrong and the instruction half deserves its own sweep. Axes: (1) DATA DEPTH data_d4..data_d64 -- note MLC depths do NOT transfer, the LLC is 16-way where the MLC is 8-way so a given negative RRPV buys a different number of aging rounds, hence starting from scratch rather than around the L2's i72d48; (2) GATE WIDTH at the centre depth; (3) the interpolated-ramp mode. Compare IPC / L1_MISS (the LLC miss counter -- 'L1_*' is Scarab's LLC naming) vs the TPLRU baseline.",
+  "_simulations":"First sweep of the COMBINED marked-RRPV policy on the LLC (--td_combined_on_l1 1; Scarab's l1_* cache = 2MB, 16-way, 2048 sets). Deliberately DATA-CENTRIC: with a 256KB L2 in front of it the instruction working set is expected to be largely captured before the LLC, so instruction lines arriving here should be rare and the front-end-bound signal correspondingly thin. Every config therefore disables the instruction class (--td_fe_rrip_thresh 1.0 -- the gate is 'fraction > thresh' and a fraction cannot exceed 1.0, so nothing qualifies and instruction lines insert at basic) EXCEPT instr_on_i16d16, which turns it back on purely to test that assumption; if it beats data_d16 the premise is wrong and the instruction half deserves its own sweep. Axes: (1) DATA DEPTH data_d4..data_d64 -- note MLC depths do NOT transfer, the LLC is 16-way where the MLC is 8-way so a given negative RRPV buys a different number of aging rounds, hence starting from scratch rather than around the L2's i72d48; (2) GATE WIDTH at the centre depth; (3) the interpolated-ramp mode. Also carries MOCKINGJAY on the LLC (mj_llc, mj_llc_nobypass) as the external reference: at 2MB / 16-way the LLC is Mockingjay's own design point, so its capacity-derived sizing lands on the paper's intended values (32 sampled sets, 11-bit signature, INF_RD 127) rather than the starved 4-set / 8-bit configuration it derives on a 256KB L2. That makes this the first place the two policies can be compared on equal terms -- a reuse-distance predictor at full strength against the topdown-signal policy, same cache, same baseline. Compare IPC / L1_MISS (the LLC miss counter -- 'L1_*' is Scarab's LLC naming) vs the TPLRU baseline.",
   "simulations":[
     {
       "suite":"datacenter",
@@ -30,7 +30,7 @@
       "warmup":null
     }
   ],
-  "_configurations":"baseline is the LLC running tree-PLRU (--l1_cache_repl_policy 21), matching the baseline convention of the td_combined_l2_* runs but applied one level out; true_lru is the machine default kept as a reference point. All td configs set --td_combined_on_l1 1 and leave the MLC untouched, so any change is attributable to the LLC alone. STATIC MODE ONLY: --td_combined_set_duel / --td_combined_dynamic_depth / --td_combined_dynamic_thresh are MLC-bound and have no effect here, so the fixed --td_load_rrip_min_rrpv / --td_fe_rrip_min_rrpv depths apply. Naming: d<M> = --td_load_rrip_min_rrpv -M (data class); thr<NN> = --td_load_replay_thresh 0.NN.",
+  "_configurations":"baseline is the LLC running tree-PLRU (--l1_cache_repl_policy 21), matching the baseline convention of the td_combined_l2_* runs but applied one level out; true_lru is the machine default kept as a reference point. All td configs set --td_combined_on_l1 1 and leave the MLC untouched, so any change is attributable to the LLC alone. STATIC MODE ONLY: --td_combined_set_duel / --td_combined_dynamic_depth / --td_combined_dynamic_thresh are MLC-bound and have no effect here, so the fixed --td_load_rrip_min_rrpv / --td_fe_rrip_min_rrpv depths apply. Naming: d<M> = --td_load_rrip_min_rrpv -M (data class); thr<NN> = --td_load_replay_thresh 0.NN. The mj_llc* configs select Mockingjay by ordinal instead (--l1_cache_repl_policy 22) and set no td_* knobs. CAUTION: --l1_cache_repl_policy is silently IGNORED whenever --td_combined_on_l1 is set, because init_memory picks REPL_MARKED_RRIP first -- so the ordinal appears only on baseline / true_lru / mj_llc* and must never be pasted onto a td_ config (and vice versa).",
   "configurations":{
     "baseline":{
       "_params":"LLC tree-PLRU (REPL_PLRU_TREE, 21). The reference every other config is measured against.",
@@ -102,6 +102,20 @@
       "slurm_options":"",
       "memory_overhead_mb":512
     },
+    "mj_llc":{
+      "_params":"Mockingjay (REPL_MOCKINGJAY, 22) on the LLC. Unlike the L2, this is the policy AT ITS DESIGN POINT: 2MB / 16-way is the paper's own LLC, so the capacity-derived sizing lands on the intended values -- 32 sampled sets of 2048 (1.6%), 2560 sampler entries, an 11-bit signature (2048 RDP entries), INF_RD 127 / INF_ETR 15 / MAX_RD 105. No --mockingjay_* overrides needed or wanted here; the starved 4-sampled-set / 8-bit configuration that motivated the L2 sweep does not arise.",
+      "params":"--l1_cache_repl_policy 22",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":64
+    },
+    "mj_llc_nobypass":{
+      "_params":"mj_llc with fill bypass disabled -- ETR victim selection only. Separates how much of Mockingjay's LLC gain comes from declining to allocate, and is the fallback reading if the bypass path in l1_fill_line (which skips the fill and completes the request) misbehaves.",
+      "params":"--l1_cache_repl_policy 22 --mockingjay_bypass 0",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":64
+    },
     "instr_on_i16d16":{
       "_params":"Premise check: the ONLY config with the instruction class enabled (--td_fe_rrip_thresh 0.7, instr -16), otherwise identical to data_d16. If it does not beat data_d16, the instruction footprint really is being absorbed by the L2 and the LLC policy should stay data-only; if it does, the front-end-bound signal survives to this level and deserves its own sweep.",
       "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -16 --td_load_rrip_min_rrpv -16",
@@ -114,7 +128,7 @@
   "collect_stats":{
     "configs":null
   },
-  "_visualize":"'IPC' here is the TARGET-ONLY figure (Periodic_*), which is also plot_stat_change_multi.py's default; pass --full-sim there for the Cumulative_* figure. L1_MISS / L1_DEMAND_FILL are the LLC counters (Scarab names the LLC 'l1_*'), NOT L1-data-cache counters -- the L1D equivalents are DCACHE_*. MLC_DEMAND_MISS is included as a control: this experiment does not touch the MLC, so it should barely move, and a large swing there means something other than the LLC policy changed.",
+  "_visualize":"'IPC' here is the TARGET-ONLY figure (Periodic_*), which is also plot_stat_change_multi.py's default; pass --full-sim there for the Cumulative_* figure. L1_MISS / L1_DEMAND_FILL are the LLC counters (Scarab names the LLC 'l1_*'), NOT L1-data-cache counters -- the L1D equivalents are DCACHE_*. MLC_DEMAND_MISS is included as a control: this experiment does not touch the MLC, so it should barely move, and a large swing there means something other than the LLC policy changed. L1_MOCKINGJAY_BYPASS is collected (collect_stats takes every stat) but deliberately NOT plotted -- it is 0 for every non-Mockingjay config, so as a percent change against the baseline it is a divide-by-zero and comes out blank. Read it directly from the CSV instead: it should be non-zero for mj_llc, exactly 0 for mj_llc_nobypass, and a mj_llc that shows 0 means the bypass path never fired and the two Mockingjay configs are secretly identical.",
   "visualize":{
     "baseline":"baseline",
     "configs":[
@@ -128,7 +142,9 @@
       "data_d16_thr30",
       "data_d16_thr70",
       "data_d16_extrap",
-      "instr_on_i16d16"
+      "instr_on_i16d16",
+      "mj_llc",
+      "mj_llc_nobypass"
     ],
     "counters":[
       "IPC",
