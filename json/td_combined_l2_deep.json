@@ -1,0 +1,153 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"mockingjay",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"td_combined_l2_deep",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. Must be the SAME build used for td_combined_l2_resweep (mlc_fill_line ordering fix + --marked_rrip_basic_rrpv), otherwise the two depth curves cannot be spliced.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/shanen",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
+  "top_simpoint":true,
+  "_simulations":"Upward extension of the td_combined_l2_resweep depth axis. That sweep ran from i48d32 DOWN to i6d4 on the assumption that halved aging had moved the optimum shallower; if i48d32 came out best it is the grid's own endpoint, not a peak, and the curve was never bracketed from above. This run continues the same 3:2 instr:data ratio upward at 1x / 1.5x / 2x / 3x / 4x the old point, so the two runs splice into one curve through the shared depth_i48d32 anchor. What to read: if the curve turns over, the peak is real and now bracketed. If it is still climbing at i192d128 -- where a protected line needs ~196 aging rounds and is effectively pinned for the whole target region -- then depth is not a tuning axis at all: the qualifying population is too small to ever crowd the set. Two secondary axes test that directly at these depths rather than leaving it to inference. thresh_broad_* re-runs the 2x and 4x points with the broad gate (fe 0.6 / load 0.4) -- more lines qualify AND each is pinned harder, which is the most crowding-prone corner of the whole space; if nothing regresses even there, the marked population genuinely cannot fill a set and neither depth nor threshold is binding, leaving --marked_rrip_basic_rrpv (demote the unmarked) as the remaining lever. instr_only_i96 / data_only_d64 repeat the resweep's class isolation at 2x, so each class has a shallow (i24/d16) and a deep point and it is visible whether the FE-bound half, the membound half, or both keep gaining with depth.",
+  "simulations":[
+    {
+      "suite":"datacenter",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"Same baseline as td_combined_l2_resweep: L2 tree-PLRU (--mlc_cache_repl_policy 21), NOT the untouched machine. depth_i48d32 is deliberately duplicated from that sweep as the splice anchor -- it must reproduce its value there, which also serves as a determinism check that the two runs are comparable. Across the depth_* ladder thresholds are held at the sweep's nominal 0.7 / 0.5 and extrapolation stays off, so depth is the only variable. thresh_broad_* change ONLY the gate relative to their depth_* twin (0.6 / 0.4), and instr_only_ / data_only_ change ONLY the disabled class (its threshold raised to 1.0, which nothing can exceed) -- each is a one-variable delta from a config in this same run. Naming: i<N>d<M> = --td_fe_rrip_min_rrpv -N, --td_load_rrip_min_rrpv -M; a class-isolated config still carries both min values but only the enabled class's is reachable.",
+  "configurations":{
+    "baseline":{
+      "_params":"REPL_PLRU_TREE (21) on the L2 -- same baseline as td_combined_l2_resweep.",
+      "params":"--mlc_cache_repl_policy 21",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "depth_i48d32":{
+      "_params":"1x -- splice anchor, duplicated from td_combined_l2_resweep. Must match its value there.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -48 --td_load_rrip_min_rrpv -32",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "depth_i72d48":{
+      "_params":"1.5x the old tuned depth.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -72 --td_load_rrip_min_rrpv -48",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "depth_i96d64":{
+      "_params":"2x -- what i48d32 effectively behaved like BEFORE the aging fix.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -96 --td_load_rrip_min_rrpv -64",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "depth_i144d96":{
+      "_params":"3x the old tuned depth.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -144 --td_load_rrip_min_rrpv -96",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "depth_i192d128":{
+      "_params":"4x -- a protected line needs ~196 aging rounds, i.e. effectively pinned. If this is still the best config, depth has saturated and is not the axis worth tuning.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -192 --td_load_rrip_min_rrpv -128",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "thresh_broad_i96d64":{
+      "_params":"Crowding test at 2x: same depths as depth_i96d64 but the broad gate (fe 0.6 / load 0.4) from td_combined_l2_resweep, so MORE lines qualify AND each is pinned harder. This is where over-protection should bite first.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.6 --td_load_replay_thresh 0.4 --td_fe_rrip_min_rrpv -96 --td_load_rrip_min_rrpv -64",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "thresh_broad_i192d128":{
+      "_params":"Crowding test at 4x: broad gate at the pinned depths. If even this does not regress, the qualifying population is genuinely too small to fill a set and neither depth nor threshold is the binding constraint.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.6 --td_load_replay_thresh 0.4 --td_fe_rrip_min_rrpv -192 --td_load_rrip_min_rrpv -128",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "instr_only_i96":{
+      "_params":"Class isolation at 2x: instruction class at -96, data class OFF (--td_load_replay_thresh 1.0 -- no fraction can exceed 1.0, so every data line inserts at basic). Pairs with instr_only_i24 in td_combined_l2_resweep to show whether the FE-bound half keeps gaining with depth.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 1.0 --td_fe_rrip_min_rrpv -96 --td_load_rrip_min_rrpv -64",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "data_only_d64":{
+      "_params":"Class isolation at 2x: data class at -64, instruction class OFF (--td_fe_rrip_thresh 1.0). Pairs with data_only_d16 in td_combined_l2_resweep for the membound half.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 1.0 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -96 --td_load_rrip_min_rrpv -64",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Same counters as td_combined_l2_resweep so the two runs plot together. 'IPC' here is the TARGET-ONLY figure (Periodic_*), which is also plot_stat_change_multi.py's default now; pass --full-sim to that script for the Cumulative_* figure instead.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "baseline",
+      "depth_i48d32",
+      "depth_i72d48",
+      "depth_i96d64",
+      "depth_i144d96",
+      "depth_i192d128",
+      "thresh_broad_i96d64",
+      "thresh_broad_i192d128",
+      "instr_only_i96",
+      "data_only_d64"
+    ],
+    "counters":[
+      "IPC",
+      "MLC_DEMAND_MISS",
+      "MLC_FILL_DIRTY"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
