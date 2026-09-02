@@ -1,0 +1,177 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"mockingjay",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"td_combined_llc_instr",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. REQUIRES the build in which TD_COMBINED_ON_L1 was added to the topdown measurement gates (topdown.c lsq_tag_inflight_loads / icache_tag_inflight_miss, and the icache_stage.c FE-window reset). Before that fix --td_combined_on_l1 selected the policy but nothing populated td_window_cycles or the FE-bound window, so every LLC line inserted at basic and all depths produced identical results. If a depth sweep here comes out flat, check that first.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/shanen",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
+  "top_simpoint":true,
+  "_simulations":"Follow-up to td_combined_llc_data, which was built on the assumption that a 256KB L2 absorbs the instruction working set and that LLC instruction lines would therefore be rare and not worth protecting. That assumption was WRONG: instr_on_i16d16 beat the instruction-off data_d16, so the front-end-bound signal survives to the LLC and earns its own sweep. This descriptor sweeps the INSTRUCTION axis with the data class left on. Axes: (1) INSTRUCTION DEPTH instr_i4d16..instr_i64d16 at a fixed data -16; (2) INSTRUCTION GATE fethr50 / fethr90 around the nominal 0.7 -- how much of the instruction stream qualifies; (3) INSTRUCTION ALONE instr_only_i16 / instr_only_i32 with the data class off, the mirror of the previous run's data_only configs, to see whether instructions carry the gain by themselves or only in combination; (4) INTERACTION instr_i32d32 and instr_i16d32, since the best data depth may move now that instruction lines are competing for the same 16 ways. Two configs are carried over verbatim from td_combined_llc_data as splice anchors: data_d16 (instruction off) and instr_on_i16d16 (the result that motivated this run). Read L1_MISS_ONPATH_IFETCH against L1_MISS_ONPATH_DFETCH -- the whole question is which class the change is actually moving, and the totals cannot tell you.",
+  "simulations":[
+    {
+      "suite":"datacenter",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"baseline is byte-identical to td_combined_llc_data (LLC tree-PLRU, --l1_cache_repl_policy 21) so the two runs share a reference. Naming: i<N>d<M> = --td_fe_rrip_min_rrpv -N (instruction class) and --td_load_rrip_min_rrpv -M (data class); fethr<NN> = --td_fe_rrip_thresh 0.NN. A class is disabled by raising its threshold to 1.0 -- the gate is 'fraction > thresh' and a fraction cannot exceed 1.0, so nothing qualifies and every line of that class inserts at basic. Data depth is held at -16 across the instruction sweep because that was td_combined_llc_data's centre point; if that run's data optimum landed elsewhere, re-centre the d value before reading the instruction axis, since the two classes share the same 16 ways. STATIC MODE: the set-duel and dynamic selectors are MLC-bound and have no effect at the LLC, so these fixed depths are what the policy uses.",
+  "configurations":{
+    "baseline":{
+      "_params":"LLC tree-PLRU (REPL_PLRU_TREE, 21). Same baseline as td_combined_llc_data.",
+      "params":"--l1_cache_repl_policy 21",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "data_d16":{
+      "_params":"Splice anchor, verbatim from td_combined_llc_data: data -16, instruction class OFF. The point this experiment is trying to beat.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 1.0 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -16 --td_load_rrip_min_rrpv -16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "instr_on_i16d16":{
+      "_params":"Splice anchor, verbatim from td_combined_llc_data: instruction class ON at -16 alongside data -16. The result that motivated this run; must reproduce its value there.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -16 --td_load_rrip_min_rrpv -16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "instr_i4d16":{
+      "_params":"Instruction depth -4 at data -16. Shallow end -- brackets the optimum from below.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -4 --td_load_rrip_min_rrpv -16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "instr_i8d16":{
+      "_params":"Instruction depth -8 at data -16.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -8 --td_load_rrip_min_rrpv -16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "instr_i32d16":{
+      "_params":"Instruction depth -32 at data -16.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "instr_i64d16":{
+      "_params":"Instruction depth -64 at data -16. Deep end -- if this is still the best, the sweep is one-sided and needs extending upward rather than being read as a peak.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -64 --td_load_rrip_min_rrpv -16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "instr_i16d16_fethr50":{
+      "_params":"Instruction gate 0.5 at i16d16: more of the instruction stream qualifies. Broader protection, more contention with the data class.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.5 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -16 --td_load_rrip_min_rrpv -16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "instr_i16d16_fethr90":{
+      "_params":"Instruction gate 0.9 at i16d16: only fetch misses that almost entirely stalled the front end qualify. If this matches the nominal 0.7, the gain comes from a small, sharply identified set of lines.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.9 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -16 --td_load_rrip_min_rrpv -16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "instr_only_i16":{
+      "_params":"Instruction alone at -16, data class OFF (--td_load_replay_thresh 1.0). Mirror of td_combined_llc_data's data_only framing: does the instruction half carry the gain by itself, or only alongside data protection?",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 1.0 --td_fe_rrip_min_rrpv -16 --td_load_rrip_min_rrpv -16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "instr_only_i32":{
+      "_params":"Instruction alone at -32, data class OFF. With the data class gone there are spare ways, so the instruction optimum may sit deeper here than it does alongside data.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 1.0 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "instr_i16d32":{
+      "_params":"Interaction: data deepened to -32 with instruction held at -16. Tests whether the data optimum moves once instruction lines are also competing for the 16 ways.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -16 --td_load_rrip_min_rrpv -32",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "instr_i32d32":{
+      "_params":"Interaction: both classes at -32. The most crowding-prone corner here -- if protection is additive this should be best, if the 16 ways are the constraint it should regress.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -32",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"'IPC' here is the TARGET-ONLY figure (Periodic_*), matching plot_stat_change_multi.py's default; pass --full-sim there for the Cumulative_* figure. The two ONPATH splits are the point of this experiment: L1_MISS_ONPATH_IFETCH and L1_MISS_ONPATH_DFETCH say WHICH class a configuration moved, which the L1_MISS total cannot. Expect them to trade off -- protecting instruction lines harder should cut IFETCH misses and raise DFETCH misses, and the IPC change is whichever side wins. Note 'L1_*' is Scarab's LLC naming, not the L1 data cache (that is DCACHE_*). Also worth plotting with --per-workload-best --best-configs over the instr_* set: if the best instruction depth varies by workload, that is the PGO argument again.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "baseline",
+      "data_d16",
+      "instr_on_i16d16",
+      "instr_i4d16",
+      "instr_i8d16",
+      "instr_i32d16",
+      "instr_i64d16",
+      "instr_i16d16_fethr50",
+      "instr_i16d16_fethr90",
+      "instr_only_i16",
+      "instr_only_i32",
+      "instr_i16d32",
+      "instr_i32d32"
+    ],
+    "counters":[
+      "IPC",
+      "L1_MISS_ONPATH_IFETCH",
+      "L1_MISS_ONPATH_DFETCH"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
