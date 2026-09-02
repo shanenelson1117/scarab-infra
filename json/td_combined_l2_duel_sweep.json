@@ -1,0 +1,145 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"mockingjay",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"td_combined_l2_duel_sweep",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. REQUIRES the two-axis dueling build (--td_combined_duel_basic_sets_per_group and --td_combined_duel_basic_axis). On an older build those flags are unknown and every config here collapses to the same 3-group depth-only duel.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/shanen",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
+  "top_simpoint":true,
+  "_simulations":"Two questions about the combined-L2 set duel. (1) LEADER BUDGET: how many sets should run a non-selected policy? Leader sets sample the alternatives but do not themselves benefit from the winner, so more leaders means a cleaner per-group signal and fewer followers cashing it in. duel_* sweeps the two group sizes from 32 to 128 leader sets of 512 (6.2% to 25%). (2) IS THE BASIC AXIS WORTH IT? noswitch_* set --td_combined_duel_basic_axis 0, which drops the 2 basic-RRPV leader groups entirely, duels only the 3 depth bins, and hands the unmarked RRPV back to the global --marked_rrip_basic_rrpv -- i.e. the depth-only behaviour from before the basic axis existed. The honest comparison is noswitch_d21 vs duel_d16_b8: 63 vs 64 leader sets, so follower coverage is matched and any difference is the axis itself rather than the sampling tax. noswitch_d16 is the exact pre-change leader budget (3x16 = 48) for continuity with the older setduel runs. All configs share the depth menu now baked into the duel (i72d48 / instr-only i96 / data-only d64) and the nominal 0.7 / 0.5 thresholds; note --td_fe_rrip_min_rrpv and --td_load_rrip_min_rrpv have NO effect under dueling because the duel supplies both depths itself.",
+  "simulations":[
+    {
+      "suite":"datacenter",
+      "subsuite":null,
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":null,
+      "warmup":null
+    }
+  ],
+  "_configurations":"baseline is byte-identical to td_combined_l2_resweep / _deep (L2 tree-PLRU, --mlc_cache_repl_policy 21) so all of these runs share a reference. Naming: d<N> = --td_combined_duel_sets_per_group N (each of the 3 depth groups), b<M> = --td_combined_duel_basic_sets_per_group M (each of the 2 basic groups). Leader totals on a 512-set L2: d8_b4=32 (6.2%), d16_b2=52 (10.2%), d16_b8=64 (12.5%, the default), d16_b16=80 (15.6%), d32_b16=128 (25%); with the axis off, d8=24 (4.7%), d16=48 (9.4%), d21=63 (12.3%). The noswitch_* configs pin --marked_rrip_basic_rrpv 3 explicitly: with the axis off the duel no longer owns basic, so that param takes over, and 3 is what the depth-only duel used before the axis was added. Window is 100k retired instructions throughout.",
+  "configurations":{
+    "baseline":{
+      "_params":"REPL_PLRU_TREE (21) on the L2 -- same baseline as the other td_combined_l2_* runs.",
+      "params":"--mlc_cache_repl_policy 21",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "duel_d16_b8":{
+      "_params":"Defaults: 3x16 depth + 2x8 basic = 64 leader sets (12.5%). The reference point for both axes.",
+      "params":"--td_combined_on_mlc 1 --td_combined_set_duel 1 --td_combined_duel_window 100000 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_combined_duel_sets_per_group 16 --td_combined_duel_basic_sets_per_group 8",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "duel_d8_b4":{
+      "_params":"Half the budget: 3x8 + 2x4 = 32 leader sets (6.2%). More followers benefit from the winner; noisier per-group miss counts.",
+      "params":"--td_combined_on_mlc 1 --td_combined_set_duel 1 --td_combined_duel_window 100000 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_combined_duel_sets_per_group 8 --td_combined_duel_basic_sets_per_group 4",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "duel_d32_b16":{
+      "_params":"Double the budget: 3x32 + 2x16 = 128 leader sets (25%). A quarter of the cache runs a non-selected policy -- cleanest selection signal, smallest population to cash it in.",
+      "params":"--td_combined_on_mlc 1 --td_combined_set_duel 1 --td_combined_duel_window 100000 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_combined_duel_sets_per_group 32 --td_combined_duel_basic_sets_per_group 16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "duel_d16_b16":{
+      "_params":"Equal-sized groups: 3x16 + 2x16 = 80 leader sets (15.6%). Tests whether the basic groups being smaller than the depth groups costs selection accuracy on that axis.",
+      "params":"--td_combined_on_mlc 1 --td_combined_set_duel 1 --td_combined_duel_window 100000 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_combined_duel_sets_per_group 16 --td_combined_duel_basic_sets_per_group 16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "duel_d16_b2":{
+      "_params":"Minimal basic sampling: 3x16 + 2x2 = 52 leader sets (10.2%). Keeps the basic axis alive at almost no sampling cost -- if this matches duel_d16_b8, the basic groups can be tiny.",
+      "params":"--td_combined_on_mlc 1 --td_combined_set_duel 1 --td_combined_duel_window 100000 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_combined_duel_sets_per_group 16 --td_combined_duel_basic_sets_per_group 2",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "noswitch_d21":{
+      "_params":"Basic axis OFF at MATCHED leader coverage: 3x21 = 63 sets vs duel_d16_b8's 64. This is the controlled comparison -- follower population is the same, so a difference is the basic axis itself, not the sampling tax.",
+      "params":"--td_combined_on_mlc 1 --td_combined_set_duel 1 --td_combined_duel_basic_axis 0 --marked_rrip_basic_rrpv 3 --td_combined_duel_window 100000 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_combined_duel_sets_per_group 21",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "noswitch_d16":{
+      "_params":"Basic axis OFF at the pre-change leader budget: 3x16 = 48 sets (9.4%), matching the old 3-group duel. Depth-only dueling with basic pinned at the global 3.",
+      "params":"--td_combined_on_mlc 1 --td_combined_set_duel 1 --td_combined_duel_basic_axis 0 --marked_rrip_basic_rrpv 3 --td_combined_duel_window 100000 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_combined_duel_sets_per_group 16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "noswitch_d8":{
+      "_params":"Basic axis OFF, minimal budget: 3x8 = 24 leader sets (4.7%). Pairs with duel_d8_b4 (32) at the small end.",
+      "params":"--td_combined_on_mlc 1 --td_combined_set_duel 1 --td_combined_duel_basic_axis 0 --marked_rrip_basic_rrpv 3 --td_combined_duel_window 100000 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_combined_duel_sets_per_group 8",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"Same counters as the other td_combined_l2_* runs so they plot together. 'IPC' here is the TARGET-ONLY figure (Periodic_*), which is also plot_stat_change_multi.py's default; pass --full-sim there for the Cumulative_* figure. --per-workload-best is worth running on this set: a duel is trying to approximate per-workload policy selection, so the oracle bar is the ceiling it is chasing.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "baseline",
+      "duel_d16_b8",
+      "duel_d8_b4",
+      "duel_d32_b16",
+      "duel_d16_b16",
+      "duel_d16_b2",
+      "noswitch_d21",
+      "noswitch_d16",
+      "noswitch_d8"
+    ],
+    "counters":[
+      "IPC",
+      "MLC_DEMAND_MISS",
+      "MLC_FILL_DIRTY"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
