@@ -1,23 +1,37 @@
 {
   "descriptor_type": "simulation",
   "architecture": "google",
-  "experiment": "google_core",
+  "experiment": "google_core_fixcheck",
   "workload_manager": "manual",
   "root_dir": "/home/shanen/",
   "application_dir": "/home/shanen/applications",
   "scarab_path": "/home/shanen/samsung/scarab",
   "scarab_build": "opt",
-  "_traces_dir": "Own suite root: /mnt/storage/traces/scarab is owned by mgiordan and not writable.",
   "traces_dir": "/mnt/storage/traces/shanen/",
-  "_top_simpoint": "MUST be false: the core-sharded simpoint list lives in workloads_db.json, not workloads_top_simp.json.",
   "top_simpoint": false,
-  "_simulations": "workload null => every google workload; cluster_id null => every core.",
+  "_purpose": "Regression check: two heavy gap-patch simpoints (tango/27, tango/38) and one zero-gap control (charlie/14), to measure how much the gap-patch size correction moves stats vs simulations/google_core/.",
   "simulations": [
     {
       "suite": "google",
       "subsuite": "google",
-      "workload": null,
-      "cluster_id": null,
+      "workload": "tango",
+      "cluster_id": 27,
+      "simulation_type": "memtrace",
+      "warmup": null
+    },
+    {
+      "suite": "google",
+      "subsuite": "google",
+      "workload": "tango",
+      "cluster_id": 38,
+      "simulation_type": "memtrace",
+      "warmup": null
+    },
+    {
+      "suite": "google",
+      "subsuite": "google",
+      "workload": "charlie",
+      "cluster_id": 14,
       "simulation_type": "memtrace",
       "warmup": null
     }
@@ -25,12 +39,6 @@
   "configurations": {
     "real_lru": {
       "params": "",
-      "binary": "scarab_current",
-      "slurm_options": "",
-      "memory_overhead_mb": 0
-    },
-    "tplru": {
-      "params": "--dcache_repl 21",
       "binary": "scarab_current",
       "slurm_options": "",
       "memory_overhead_mb": 0
