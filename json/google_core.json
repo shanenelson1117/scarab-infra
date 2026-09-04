@@ -1,0 +1,36 @@
+{
+  "descriptor_type": "simulation",
+  "architecture": "beefy",
+  "experiment": "google_core",
+  "workload_manager": "slurm",
+  "root_dir": "/home/shanen/",
+  "application_dir": "/home/shanen/applications",
+  "scarab_path": "/home/shanen/samsung/scarab",
+  "scarab_build": "opt",
+  "_traces_dir": "Own suite root: /mnt/storage/traces/scarab is owned by mgiordan and not writable.",
+  "traces_dir": "/mnt/storage/traces/shanen/",
+  "_top_simpoint": "MUST be false: the core-sharded simpoint list lives in workloads_db.json, not workloads_top_simp.json.",
+  "top_simpoint": false,
+  "_simulations": "workload null => every google workload; cluster_id null => every core.",
+  "simulations": [
+    {
+      "suite": "google",
+      "subsuite": "google",
+      "workload": null,
+      "cluster_id": null,
+      "simulation_type": "memtrace",
+      "warmup": null
+    }
+  ],
+  "configurations": {
+    "baseline": {
+      "params": "",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 0
+    }
+  },
+  "collect_stats": {
+    "configs": null
+  }
+}

@@ -81,12 +81,6 @@
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
-    },
-    "rand_1p0":{
-      "params":"--td_load_replay 1 --td_load_replay_random 1 --td_load_replay_seed 1 --td_load_dir /home/shanen/td_load_records/record-mockingjay-spec06-dc --td_load_replay_key pc --td_load_replay_thresh 1.0",
-      "binary":"scarab_current",
-      "slurm_options":"",
-      "memory_overhead_mb":0
     }
   },
   "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
