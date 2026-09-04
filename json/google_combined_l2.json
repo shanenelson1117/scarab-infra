@@ -1,0 +1,178 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"google",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"google_combined_l2",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"slurm",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. REQUIRES the build with the combined marked-RRPV policy, --marked_rrip_basic_rrpv, and REPL_MOCKINGJAY. PARAMS.google must also contain the bp_l0_latency 0 / bp_main_latency 1 fix -- with decode_cycles at the spec's 1 and the L0 early predictor left enabled, bp.c:213 asserts BP_MAIN_LATENCY < DECODE_CYCLES and the run dies at init.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/shanen/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
+  "top_simpoint":false,
+  "_simulations":"First combined marked-RRPV sweep on the L2 for the google traces (12 workloads x 3 simpoints, memtrace). NOTHING CARRIES OVER FROM THE EARLIER L2 WORK: PARAMS.google's L2 is 2 MB / 16-way / 2048 sets, where the td_combined_l2_* sweeps were tuned against a 256 KB / 8-way / 512-set L2. Associativity drives how far srrip_update_evict must age per fill, so a given negative RRPV buys a different amount of protection -- i72d48 and the whole depth ladder are meaningless here. Depths therefore restart from scratch and are swept symmetrically (i<N>d<N>) over an 8x span to find the region before splitting the classes apart. Axes: (1) DEPTH depth_d8..depth_d64; (2) CLASS ISOLATION instr_only / data_only at the centre, which half carries it; (3) GATE WIDTH thresh_broad / thresh_narrow; (4) MODE extrap (interpolated ramp) and basic4 (unmarked lines demoted to evict-on-arrival rather than protecting marked ones harder). mj_l2 is included as an external reference: at 2 MB / 16-way the L2 now sits exactly on Mockingjay's design point, so its capacity-derived sizing lands on the paper's intended 32 sampled sets / 11-bit signature with no overrides needed -- the undersizing that dogged it on the old 256 KB L2 is gone.",
+  "simulations":[
+    {
+      "suite":"google",
+      "subsuite":"google",
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":"memtrace",
+      "warmup":null
+    }
+  ],
+  "_configurations":"baseline is L2 tree-PLRU (--mlc_cache_repl_policy 21), the realistic hardware reference that true-LRU flatters; true_lru is the machine default kept alongside so the LRU/PLRU gap stays visible. Naming: i<N>d<M> = --td_fe_rrip_min_rrpv -N (instruction class) / --td_load_rrip_min_rrpv -M (data class); the depth ladder holds them equal. A class is disabled by raising its threshold to 1.0 -- the gate is 'fraction > thresh' and a fraction cannot exceed 1.0, so nothing qualifies and every line of that class inserts at basic. CAUTION: --mlc_cache_repl_policy is silently IGNORED whenever --td_combined_on_mlc is set (init_memory picks REPL_MARKED_RRIP first), so the ordinal appears only on baseline / true_lru / mj_l2 and must never be pasted onto a td_ config. Set dueling and the dynamic-depth selectors are left OFF here -- this sweep is establishing the static operating point they would select among.",
+  "configurations":{
+    "depth_d8":{
+      "_params":"Both classes at -8. Shallow end.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -8 --td_load_rrip_min_rrpv -8",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "depth_d16":{
+      "_params":"Both classes at -16. Centre point for the isolation, gate and mode axes.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -16 --td_load_rrip_min_rrpv -16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "depth_d32":{
+      "_params":"Both classes at -32.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -32",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "depth_d64":{
+      "_params":"Both classes at -64. Deep end -- brackets the optimum from above so the ladder is not one-sided. If this still wins, extend upward rather than reading it as a peak.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -64 --td_load_rrip_min_rrpv -64",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "ratio_i16d32":{
+      "_params":"Asymmetric: data protected 2x as deep as instructions (instr -16, data -32). One-variable delta from depth_d16 (data only) and from depth_d32 (instr only).",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -16 --td_load_rrip_min_rrpv -32",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "ratio_i32d16":{
+      "_params":"Asymmetric: instructions protected 2x as deep as data (instr -32, data -16). The mirror of ratio_i16d32; together with depth_d16 and depth_d32 these four close a 2x2 corner of the (instr, data) grid.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "instr_only_i16":{
+      "_params":"Instruction class at -16, data class OFF (--td_load_replay_thresh 1.0). Half the combined gain, isolated.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 1.0 --td_fe_rrip_min_rrpv -16 --td_load_rrip_min_rrpv -16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "data_only_d16":{
+      "_params":"Data class at -16, instruction class OFF (--td_fe_rrip_thresh 1.0). The mirror.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 1.0 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -16 --td_load_rrip_min_rrpv -16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "thresh_broad_d16":{
+      "_params":"Gate width at the centre depth: fe 0.6 / load 0.4 qualifies more lines -- broader protection, more contention for the 16 ways.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.6 --td_load_replay_thresh 0.4 --td_fe_rrip_min_rrpv -16 --td_load_rrip_min_rrpv -16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "thresh_narrow_d16":{
+      "_params":"Gate width at the centre depth: fe 0.8 / load 0.6 -- only the most stalling misses qualify. If this matches the nominal, the gain comes from a small, sharply identified set of lines.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.8 --td_load_replay_thresh 0.6 --td_fe_rrip_min_rrpv -16 --td_load_rrip_min_rrpv -16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "extrap_d16":{
+      "_params":"Mode check at the centre depth: interpolated ramp instead of fixed-min, anchor 0.5 on both classes -- a line below the anchor inserts at basic, and from the anchor to fraction 1.0 the RRPV interpolates toward -16, so retention tracks how stalling the miss actually was.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 1 --td_load_rrip_extrapolate 1 --td_fe_rrip_extrap_anchor 0.5 --td_load_rrip_extrap_anchor 0.5 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -16 --td_load_rrip_min_rrpv -16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "basic4_d16":{
+      "_params":"Widen the marked/unmarked gap from the DEMOTION side instead: unmarked lines insert at RRPV 4 (= RRIP_DISTANT_VAL, the value srrip_update_evict matches on) rather than the default 3. CAVEAT: this also suppresses AGING, since the evict loop only ages when no line sits at RRIP_DISTANT_VAL -- so marked lines are pinned harder as a side effect and a gain here is the combined effect, not isolated demotion.",
+      "params":"--td_combined_on_mlc 1 --marked_rrip_basic_rrpv 4 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -16 --td_load_rrip_min_rrpv -16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "mj_l2":{
+      "_params":"Mockingjay (REPL_MOCKINGJAY, 22) on the L2 as an external reference. At 2 MB / 16-way this is the policy AT ITS DESIGN POINT -- the capacity-derived sizing lands on 32 sampled sets of 2048 and an 11-bit signature (INF_RD 127 / INF_ETR 15 / MAX_RD 105), so no --mockingjay_* overrides are needed or wanted.",
+      "params":"--mlc_cache_repl_policy 22",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":64
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"'IPC' is the TARGET-ONLY figure (Periodic_*), which is also plot_stat_change_multi.py's default; pass --full-sim there for the Cumulative_* figure. MLC_DEMAND_MISS is the quantity these configs steer. The two ONPATH splits are what make a COMBINED policy readable: the instruction and data classes trade against each other for the same 16 ways, so MLC_MISS_ONPATH_IFETCH vs MLC_MISS_ONPATH_DFETCH says which side a config actually moved, which the total cannot. Also worth running --per-workload-best --best-configs over the depth_* set: 12 workloads is enough spread that the best depth may well vary by workload, which is the profile-guided-tuning argument. NOTE the machine has NO TLB (perfect, zero misses, no page-walk traffic), so L2 pressure here is understated relative to real hardware -- see the caveat block in PARAMS.google.",
+  "visualize":{
+    "baseline":"baseline",
+    "configs":[
+      "baseline",
+      "true_lru",
+      "depth_d8",
+      "depth_d16",
+      "depth_d32",
+      "depth_d64",
+      "instr_only_i16",
+      "data_only_d16",
+      "thresh_broad_d16",
+      "thresh_narrow_d16",
+      "extrap_d16",
+      "basic4_d16",
+      "mj_l2"
+    ],
+    "counters":[
+      "IPC",
+      "MLC_DEMAND_MISS",
+      "MLC_MISS_ONPATH_IFETCH",
+      "MLC_MISS_ONPATH_DFETCH"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"baseline",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
