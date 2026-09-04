@@ -1,6 +1,6 @@
 {
   "descriptor_type": "simulation",
-  "architecture": "beefy",
+  "architecture": "google",
   "experiment": "google_core",
   "workload_manager": "slurm",
   "root_dir": "/home/shanen/",
@@ -23,8 +23,14 @@
     }
   ],
   "configurations": {
-    "baseline": {
+    "real_lru": {
       "params": "",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 0
+    },
+    "tplru": {
+      "params": "--dcache_repl 21",
       "binary": "scarab_current",
       "slurm_options": "",
       "memory_overhead_mb": 0
