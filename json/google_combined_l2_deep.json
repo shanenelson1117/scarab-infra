@@ -1,0 +1,146 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"google",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"google_combined_l2_deep",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"slurm",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. REQUIRES the build with the combined marked-RRPV policy and the two-axis MLC set duel (--td_combined_set_duel with td_combined_duel_basic_axis / td_combined_duel_basic_sets_per_group). PARAMS.google must also carry the bp_l0_latency 0 / bp_main_latency 1 fix -- with decode_cycles at the spec's 1 and the L0 early predictor left on, bp.c:213 asserts BP_MAIN_LATENCY < DECODE_CYCLES and the run dies at init.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/shanen/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
+  "top_simpoint":false,
+  "_simulations":"Deep follow-up to google_combined_l2 on the same google traces (12 workloads x 3 simpoints, memtrace) and the same 2 MB / 16-way / 2048-set L2. NO BASELINE CONFIG -- splice against google_combined_l2 (or plot with plot_stat_change_multi.py --raw, which needs no baseline). Four groups. (1) DEEPER LADDER depth_d96 extends past that run's d64 end, with narrow-gate twins at both 96 and 64 to test whether deep protection only pays once the gate is selective enough to keep the protected set small. (2) RATIOS ratio_i64d48 / ratio_i96d64 probe instruction-deeper-than-data at the deep end -- and note these bracket the MLC duel's own compiled bins (i72d48 / instr-only i96 / data-only d64), so the static points directly frame what the duel is choosing among. (3) repl_srrip is plain SRRIP on the L2, the unmarked parent of this whole policy family and the honest floor: marked-RRIP has to beat its own base mechanism, not just tree-PLRU. (4) SET DUELING duel_* lets the mechanism pick a depth bin per window instead of pinning one. At 2048 sets the leader tax is small -- 3x16 = 48 sets (2.3%) for the depth arm alone, 3x16+2x8 = 64 (3.1%) with the basic arm -- versus 12.5% on the old 512-set L2, so dueling is far cheaper here than it was.",
+  "simulations":[
+    {
+      "suite":"google",
+      "subsuite":"google",
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":"memtrace",
+      "warmup":null
+    }
+  ],
+  "_configurations":"Naming: depth_d<N> = both classes at -N with the nominal gate (fe 0.7 / load 0.5); thresh_narrow_d<N> = the same depths with the narrow gate (fe 0.8 / load 0.6); ratio_i<N>d<M> = --td_fe_rrip_min_rrpv -N / --td_load_rrip_min_rrpv -M. CAUTION: --mlc_cache_repl_policy is silently IGNORED whenever --td_combined_on_mlc is set (init_memory picks REPL_MARKED_RRIP first), so the ordinal appears only on repl_srrip and must never be pasted onto a td_ config. For the duel_* configs the depth bins are COMPILED IN (g_duel_instr / g_duel_data in memory.c: i72d48, instruction-only i96, data-only d64), so --td_fe_rrip_min_rrpv / --td_load_rrip_min_rrpv have NO effect there and are omitted; the thresholds still apply. Group 0 of the duel always runs the incumbent so ties hold it, and exactly one coordinate moves per window.",
+  "configurations":{
+    "depth_d96":{
+      "_params":"Both classes at -96, nominal gate. Extends google_combined_l2's ladder past its d64 end.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -96 --td_load_rrip_min_rrpv -96",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "thresh_narrow_d96":{
+      "_params":"Both classes at -96 with the NARROW gate (fe 0.8 / load 0.6). One-variable delta from depth_d96: does very deep protection need a selective gate to avoid crowding the 16 ways?",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.8 --td_load_replay_thresh 0.6 --td_fe_rrip_min_rrpv -96 --td_load_rrip_min_rrpv -96",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "thresh_narrow_d64":{
+      "_params":"Both classes at -64 with the NARROW gate. One-variable delta from google_combined_l2's depth_d64 (which is -64 at the nominal gate), so the pair isolates the gate at a fixed depth.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.8 --td_load_replay_thresh 0.6 --td_fe_rrip_min_rrpv -64 --td_load_rrip_min_rrpv -64",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "ratio_i64d48":{
+      "_params":"Instructions -64, data -48. Instruction-deeper-than-data at the deep end; matches the MLC duel's first compiled bin scaled down slightly.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -64 --td_load_rrip_min_rrpv -48",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "ratio_i96d64":{
+      "_params":"Instructions -96, data -64. Same 3:2 instruction:data ratio as ratio_i64d48, scaled up 1.5x -- so the pair separates the RATIO from the MAGNITUDE.",
+      "params":"--td_combined_on_mlc 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -96 --td_load_rrip_min_rrpv -64",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "repl_srrip":{
+      "_params":"Plain SRRIP (REPL_SRRIP, 16) on the L2 -- the unmarked parent of the marked-RRIP family and the honest floor for it. Marked-RRIP inserts at a negative RRPV and reuses srrip_update_evict for aging and eviction, so this is the same mechanism with the marking removed.",
+      "params":"--mlc_cache_repl_policy 16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "duel_depth":{
+      "_params":"Set duel, DEPTH arm only (basic axis off): 3 leader groups x 16 sets = 48 of 2048 (2.3%). Picks per window among the compiled bins i72d48 / instruction-only i96 / data-only d64; unmarked lines stay at the global --marked_rrip_basic_rrpv default of 3.",
+      "params":"--td_combined_on_mlc 1 --td_combined_set_duel 1 --td_combined_duel_basic_axis 0 --td_combined_duel_window 100000 --td_combined_duel_sets_per_group 16 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "duel_depth_basic":{
+      "_params":"Set duel, DEPTH + BASIC arms: 5 leader groups (3x16 + 2x8) = 64 of 2048 (3.1%). Adds the unmarked-RRPV axis over {2,3,4} on top of the depth bins.",
+      "params":"--td_combined_on_mlc 1 --td_combined_set_duel 1 --td_combined_duel_basic_axis 1 --td_combined_duel_window 100000 --td_combined_duel_sets_per_group 16 --td_combined_duel_basic_sets_per_group 8 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "duel_depth_g8":{
+      "_params":"Set duel, depth arm only, 8 sets per group = 24 leader sets (1.2%). Halves the sampling tax against duel_depth so more followers cash in the winner; noisier per-bin miss counts. The pair separates 'the duel picks well' from 'the leader tax costs'.",
+      "params":"--td_combined_on_mlc 1 --td_combined_set_duel 1 --td_combined_duel_basic_axis 0 --td_combined_duel_window 100000 --td_combined_duel_sets_per_group 8 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"No baseline config exists in this run by design. Either splice with google_combined_l2 (plot_stat_change_multi.py takes several CSVs and resolves each config from whichever contains it) or use --raw, which needs no baseline at all. The baseline named below is only a placeholder so the field does not dangle.",
+  "visualize":{
+    "baseline":"repl_srrip",
+    "configs":[
+      "repl_srrip",
+      "depth_d96",
+      "thresh_narrow_d96",
+      "thresh_narrow_d64",
+      "ratio_i64d48",
+      "ratio_i96d64",
+      "duel_depth",
+      "duel_depth_basic",
+      "duel_depth_g8"
+    ],
+    "counters":[
+      "IPC",
+      "MLC_DEMAND_MISS",
+      "MLC_MISS_ONPATH_IFETCH",
+      "MLC_MISS_ONPATH_DFETCH"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"repl_srrip",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
