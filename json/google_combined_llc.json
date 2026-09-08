@@ -1,0 +1,186 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"google",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"google_combined_llc",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. REQUIRES the build with --td_combined_on_l1, the three-arm LLC duel (td_combined_l1_*), and REPL_MOCKINGJAY. It must ALSO include the fix that added TD_COMBINED_ON_L1 to the topdown measurement gates (topdown.c lsq_tag_inflight_loads / icache_tag_inflight_miss and the icache_stage.c FE-window reset) -- without it nothing populates td_window_cycles or the FE-bound window at the LLC, every line inserts at basic, and EVERY DEPTH CONFIG HERE READS IDENTICALLY. If the depth ladder comes out flat, check that first. PARAMS.google must also carry the bp_l0_latency 0 / bp_main_latency 1 fix or the run dies at init on bp.c:213.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/shanen/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
+  "top_simpoint":false,
+  "_simulations":"Combined marked-RRPV sweep on the LLC for the google traces (12 workloads x 3 simpoints, memtrace). PARAMS.google's LLC (Scarab's l1_*) is 4 MB PRIVATE PER CORE, 16-way, 4096 sets, 20-cycle. Same associativity as the L2, so the aging-per-fill behaviour is comparable and depths are roughly transferable between the two levels -- but twice the capacity competes for the same 16 ways, so the optimum need not land in the same place. Groups. (1) DEPTH depth_d16..depth_d96, bracketed on both ends. (2) CLASS ISOLATION instr_only / data_only at the -32 centre: at the LLC an instruction line has already missed L1I AND L2, so the front-end signal is much rarer here and this is the axis that says whether it survives that far. (3) GATE thresh_narrow_d32. (4) RATIO ratio_i64d32, instructions deeper than data. (5) SET DUELING duel_* -- three arms (depth / threshold / basic), each switchable, with a selection metric that can be raw demand misses OR protected hits. At 4096 sets all six leader groups cost 96 sets (2.3%), so dueling is cheap here. (6) mj_llc as the external reference: at 4 MB / 16-way Mockingjay derives 64 sampled sets and a 12-bit signature, comfortably at its design point, so it needs no --mockingjay_* overrides. NOTE the machine models NO TLB (perfect, zero misses, no page-walk traffic), which removes real competition for LLC capacity -- results here understate LLC pressure; see the caveat block in PARAMS.google.",
+  "simulations":[
+    {
+      "suite":"google",
+      "subsuite":"google",
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":"memtrace",
+      "warmup":null
+    }
+  ],
+  "_configurations":"No config is named 'baseline'; repl_tplru (tree-PLRU) and repl_srrip (plain SRRIP) are the two reference policies. SRRIP is the one that matters most -- marked-RRIP inserts at a negative RRPV and then reuses srrip_update_evict for aging and eviction, so SRRIP is the same mechanism with the marking removed, and beating it is the real bar. Naming: depth_d<N> = both classes at -N with the nominal gate (fe 0.7 / load 0.5); thresh_narrow = fe 0.8 / load 0.6; ratio_i<N>d<M> = --td_fe_rrip_min_rrpv -N / --td_load_rrip_min_rrpv -M. A class is disabled by raising its threshold to 1.0 (the gate is 'fraction > thresh' and a fraction cannot exceed 1.0). CAUTION: --l1_cache_repl_policy is silently IGNORED whenever --td_combined_on_l1 is set (init_memory picks REPL_MARKED_RRIP first), so the ordinal appears only on repl_tplru / repl_srrip / mj_llc and must never be pasted onto a td_ config. For duel_* the depth bins are COMPILED IN (g_l1duel_instr / g_l1duel_data in memory.c: instructions pinned at -32 with data OFF / -16 / -32), so --td_fe_rrip_min_rrpv and --td_load_rrip_min_rrpv have NO effect there and are omitted; the threshold and basic arms supply their own values too. Group 0 always runs the incumbent, so ties hold it and exactly one coordinate moves per window.",
+  "configurations":{
+    "llc_tplru":{
+      "_params":"LLC tree-PLRU (REPL_PLRU_TREE, 21) -- the realistic hardware reference that true-LRU flatters.",
+      "params":"--l1_cache_repl_policy 21",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "llc_srrip":{
+      "_params":"LLC plain SRRIP (REPL_SRRIP, 16) -- the unmarked parent of the marked-RRIP family and the honest floor for it.",
+      "params":"--l1_cache_repl_policy 16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":0
+    },
+    "llc_depth_d16":{
+      "_params":"Both classes at -16, nominal gate. Shallow end.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -16 --td_load_rrip_min_rrpv -16",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "llc_depth_d32":{
+      "_params":"Both classes at -32, nominal gate. Centre for the isolation / gate / ratio axes, and the depth the duel's own bins are built around.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -32",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "llc_depth_d64":{
+      "_params":"Both classes at -64, nominal gate.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -64 --td_load_rrip_min_rrpv -64",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "llc_depth_d96":{
+      "_params":"Both classes at -96, nominal gate. Deep end -- brackets the optimum from above. If this still wins, the ladder is one-sided and needs extending rather than reading as a peak. It would also mean the duel's compiled bins (max -32) sit well shallower than the useful region.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -96 --td_load_rrip_min_rrpv -96",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "llc_instr_only_i32":{
+      "_params":"Instruction class at -32, data class OFF (--td_load_replay_thresh 1.0). The key question at this level: an instruction line reaching the LLC has already missed L1I and L2, so the front-end-bound signal is far rarer here than at the L2 -- does it still carry any gain?",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 1.0 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -32",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "llc_data_only_d32":{
+      "_params":"Data class at -32, instruction class OFF (--td_fe_rrip_thresh 1.0). The mirror; expected to carry most of the gain at the LLC.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 1.0 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -32",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "llc_thresh_narrow_d32":{
+      "_params":"Gate width at the centre depth: fe 0.8 / load 0.6 -- only the most stalling misses qualify. One-variable delta from depth_d32.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.8 --td_load_replay_thresh 0.6 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -32",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "llc_ratio_i64d32":{
+      "_params":"Instructions -64, data -32: instruction class protected twice as deep. One-variable delta from depth_d32 (instruction only) and from depth_d64 (data only).",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -64 --td_load_rrip_min_rrpv -32",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "llc_duel_dt_m0":{
+      "_params":"LLC set duel, DEPTH + THRESHOLD arms (basic off), metric = demand misses. 4 leader groups x 16 sets = 64 of 4096 (1.6%).",
+      "params":"--td_combined_on_l1 1 --td_combined_l1_set_duel 1 --td_combined_l1_duel_depth_axis 1 --td_combined_l1_duel_thresh_axis 1 --td_combined_l1_duel_basic_axis 0 --td_combined_l1_duel_metric 0 --td_combined_l1_duel_window 100000 --td_combined_l1_duel_sets_per_group 16 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "llc_duel_dtb_m0":{
+      "_params":"All three arms, metric = demand misses. 6 leader groups x 16 = 96 of 4096 (2.3%) -- the full mechanism.",
+      "params":"--td_combined_on_l1 1 --td_combined_l1_set_duel 1 --td_combined_l1_duel_depth_axis 1 --td_combined_l1_duel_thresh_axis 1 --td_combined_l1_duel_basic_axis 1 --td_combined_l1_duel_metric 0 --td_combined_l1_duel_window 100000 --td_combined_l1_duel_sets_per_group 16 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "llc_duel_dtb_m1":{
+      "_params":"All three arms, metric = PROTECTED HITS (maximised) instead of demand misses (minimised): score an arm by how often the lines it marked are actually reused, rather than by aggregate set performance. One-variable delta from duel_dtb_m0. The two can disagree -- an arm that marks very few lines can score well on protected hits while missing more overall -- so this should favour narrower, more confident marking.",
+      "params":"--td_combined_on_l1 1 --td_combined_l1_set_duel 1 --td_combined_l1_duel_depth_axis 1 --td_combined_l1_duel_thresh_axis 1 --td_combined_l1_duel_basic_axis 1 --td_combined_l1_duel_metric 1 --td_combined_l1_duel_window 100000 --td_combined_l1_duel_sets_per_group 16 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "llc_mj":{
+      "_params":"Mockingjay (REPL_MOCKINGJAY, 22) on the LLC as the external reference. At 4 MB / 16-way it derives 64 sampled sets of 4096 and a 12-bit signature (INF_RD 127 / INF_ETR 15 / MAX_RD 105) -- comfortably at its design point, so no --mockingjay_* overrides are needed or wanted.",
+      "params":"--l1_cache_repl_policy 22",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":64
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"'IPC' is the TARGET-ONLY figure (Periodic_*), matching plot_stat_change_multi.py's default; pass --full-sim for the Cumulative_* figure. The two ONPATH splits are what make a combined policy readable -- the classes trade against each other for the same 16 ways, so L1_MISS_ONPATH_IFETCH vs L1_MISS_ONPATH_DFETCH says which side a config moved where the total cannot. Note 'L1_*' is Scarab's LLC naming, not the L1 data cache (that is DCACHE_*). MLC_DEMAND_MISS is a CONTROL: this experiment does not touch the L2, so it should barely move, and a large swing there means something other than the LLC policy changed. L1_MOCKINGJAY_BYPASS is collected but not plotted -- it is 0 for every non-Mockingjay config, so as a percent change it is a divide-by-zero; read it from the CSV instead, and if it is 0 for mj_llc the bypass path never fired.",
+  "visualize":{
+    "baseline":"llc_tplru",
+    "configs":[
+      "llc_tplru",
+      "llc_srrip",
+      "llc_depth_d16",
+      "llc_depth_d32",
+      "llc_depth_d64",
+      "llc_depth_d96",
+      "llc_instr_only_i32",
+      "llc_data_only_d32",
+      "llc_thresh_narrow_d32",
+      "llc_ratio_i64d32",
+      "llc_duel_dt_m0",
+      "llc_duel_dtb_m0",
+      "llc_duel_dtb_m1",
+      "llc_mj"
+    ],
+    "counters":[
+      "IPC",
+      "L1_MISS_ONPATH_IFETCH",
+      "L1_MISS_ONPATH_DFETCH",
+      "MLC_DEMAND_MISS"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"llc_tplru",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
