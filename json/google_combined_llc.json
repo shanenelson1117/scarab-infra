@@ -32,9 +32,9 @@
   ],
   "_configurations":"No config is named 'baseline'; repl_tplru (tree-PLRU) and repl_srrip (plain SRRIP) are the two reference policies. SRRIP is the one that matters most -- marked-RRIP inserts at a negative RRPV and then reuses srrip_update_evict for aging and eviction, so SRRIP is the same mechanism with the marking removed, and beating it is the real bar. Naming: depth_d<N> = both classes at -N with the nominal gate (fe 0.7 / load 0.5); thresh_narrow = fe 0.8 / load 0.6; ratio_i<N>d<M> = --td_fe_rrip_min_rrpv -N / --td_load_rrip_min_rrpv -M. A class is disabled by raising its threshold to 1.0 (the gate is 'fraction > thresh' and a fraction cannot exceed 1.0). CAUTION: --l1_cache_repl_policy is silently IGNORED whenever --td_combined_on_l1 is set (init_memory picks REPL_MARKED_RRIP first), so the ordinal appears only on repl_tplru / repl_srrip / mj_llc and must never be pasted onto a td_ config. For duel_* the depth bins are COMPILED IN (g_l1duel_instr / g_l1duel_data in memory.c: instructions pinned at -32 with data OFF / -16 / -32), so --td_fe_rrip_min_rrpv and --td_load_rrip_min_rrpv have NO effect there and are omitted; the threshold and basic arms supply their own values too. Group 0 always runs the incumbent, so ties hold it and exactly one coordinate moves per window.",
   "configurations":{
-    "llc_tplru":{
+    "llc_lru":{
       "_params":"LLC tree-PLRU (REPL_PLRU_TREE, 21) -- the realistic hardware reference that true-LRU flatters.",
-      "params":"--l1_cache_repl_policy 21",
+      "params":"",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":0
@@ -98,27 +98,6 @@
     "llc_ratio_i64d32":{
       "_params":"Instructions -64, data -32: instruction class protected twice as deep. One-variable delta from depth_d32 (instruction only) and from depth_d64 (data only).",
       "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -64 --td_load_rrip_min_rrpv -32",
-      "binary":"scarab_current",
-      "slurm_options":"",
-      "memory_overhead_mb":512
-    },
-    "llc_duel_dt_m0":{
-      "_params":"LLC set duel, DEPTH + THRESHOLD arms (basic off), metric = demand misses. 4 leader groups x 16 sets = 64 of 4096 (1.6%).",
-      "params":"--td_combined_on_l1 1 --td_combined_l1_set_duel 1 --td_combined_l1_duel_depth_axis 1 --td_combined_l1_duel_thresh_axis 1 --td_combined_l1_duel_basic_axis 0 --td_combined_l1_duel_metric 0 --td_combined_l1_duel_window 100000 --td_combined_l1_duel_sets_per_group 16 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0",
-      "binary":"scarab_current",
-      "slurm_options":"",
-      "memory_overhead_mb":512
-    },
-    "llc_duel_dtb_m0":{
-      "_params":"All three arms, metric = demand misses. 6 leader groups x 16 = 96 of 4096 (2.3%) -- the full mechanism.",
-      "params":"--td_combined_on_l1 1 --td_combined_l1_set_duel 1 --td_combined_l1_duel_depth_axis 1 --td_combined_l1_duel_thresh_axis 1 --td_combined_l1_duel_basic_axis 1 --td_combined_l1_duel_metric 0 --td_combined_l1_duel_window 100000 --td_combined_l1_duel_sets_per_group 16 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0",
-      "binary":"scarab_current",
-      "slurm_options":"",
-      "memory_overhead_mb":512
-    },
-    "llc_duel_dtb_m1":{
-      "_params":"All three arms, metric = PROTECTED HITS (maximised) instead of demand misses (minimised): score an arm by how often the lines it marked are actually reused, rather than by aggregate set performance. One-variable delta from duel_dtb_m0. The two can disagree -- an arm that marks very few lines can score well on protected hits while missing more overall -- so this should favour narrower, more confident marking.",
-      "params":"--td_combined_on_l1 1 --td_combined_l1_set_duel 1 --td_combined_l1_duel_depth_axis 1 --td_combined_l1_duel_thresh_axis 1 --td_combined_l1_duel_basic_axis 1 --td_combined_l1_duel_metric 1 --td_combined_l1_duel_window 100000 --td_combined_l1_duel_sets_per_group 16 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
