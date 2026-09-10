@@ -4,7 +4,7 @@
   "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
   "architecture":"google",
   "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
-  "experiment":"google_combined_llc",
+  "experiment":"google_combined_llc_2",
   "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
   "workload_manager":"manual",
   "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
@@ -32,40 +32,40 @@
   ],
   "_configurations":"No config is named 'baseline'; repl_tplru (tree-PLRU) and repl_srrip (plain SRRIP) are the two reference policies. SRRIP is the one that matters most -- marked-RRIP inserts at a negative RRPV and then reuses srrip_update_evict for aging and eviction, so SRRIP is the same mechanism with the marking removed, and beating it is the real bar. Naming: depth_d<N> = both classes at -N with the nominal gate (fe 0.7 / load 0.5); thresh_narrow = fe 0.8 / load 0.6; ratio_i<N>d<M> = --td_fe_rrip_min_rrpv -N / --td_load_rrip_min_rrpv -M. A class is disabled by raising its threshold to 1.0 (the gate is 'fraction > thresh' and a fraction cannot exceed 1.0). CAUTION: --l1_cache_repl_policy is silently IGNORED whenever --td_combined_on_l1 is set (init_memory picks REPL_MARKED_RRIP first), so the ordinal appears only on repl_tplru / repl_srrip / mj_llc and must never be pasted onto a td_ config. For duel_* the depth bins are COMPILED IN (g_l1duel_instr / g_l1duel_data in memory.c: instructions pinned at -32 with data OFF / -16 / -32), so --td_fe_rrip_min_rrpv and --td_load_rrip_min_rrpv have NO effect there and are omitted; the threshold and basic arms supply their own values too. Group 0 always runs the incumbent, so ties hold it and exactly one coordinate moves per window.",
   "configurations":{
-    "llc_srrip":{
-      "_params":"LLC plain SRRIP (REPL_SRRIP, 16) -- the unmarked parent of the marked-RRIP family and the honest floor for it.",
-      "params":"--l1_cache_repl_policy 16",
-      "binary":"scarab_current",
-      "slurm_options":"",
-      "memory_overhead_mb":0
-    },
-    "llc_depth_d16":{
-      "_params":"Both classes at -16, nominal gate. Shallow end.",
-      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -16 --td_load_rrip_min_rrpv -16",
+    "llc_instr_only_i32":{
+      "_params":"Instruction class at -32, data class OFF (--td_load_replay_thresh 1.0). The key question at this level: an instruction line reaching the LLC has already missed L1I and L2, so the front-end-bound signal is far rarer here than at the L2 -- does it still carry any gain?",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 1.0 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -32",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
     },
-    "llc_depth_d32":{
-      "_params":"Both classes at -32, nominal gate. Centre for the isolation / gate / ratio axes, and the depth the duel's own bins are built around.",
-      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -32",
+    "llc_data_only_d32":{
+      "_params":"Data class at -32, instruction class OFF (--td_fe_rrip_thresh 1.0). The mirror; expected to carry most of the gain at the LLC.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 1.0 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -32",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
     },
-    "llc_depth_d64":{
-      "_params":"Both classes at -64, nominal gate.",
-      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -64 --td_load_rrip_min_rrpv -64",
+    "llc_thresh_narrow_d32":{
+      "_params":"Gate width at the centre depth: fe 0.8 / load 0.6 -- only the most stalling misses qualify. One-variable delta from depth_d32.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.8 --td_load_replay_thresh 0.6 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -32",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
     },
-    "llc_depth_d96":{
-      "_params":"Both classes at -96, nominal gate. Deep end -- brackets the optimum from above. If this still wins, the ladder is one-sided and needs extending rather than reading as a peak. It would also mean the duel's compiled bins (max -32) sit well shallower than the useful region.",
-      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -96 --td_load_rrip_min_rrpv -96",
+    "llc_ratio_i64d32":{
+      "_params":"Instructions -64, data -32: instruction class protected twice as deep. One-variable delta from depth_d32 (instruction only) and from depth_d64 (data only).",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -64 --td_load_rrip_min_rrpv -32",
       "binary":"scarab_current",
       "slurm_options":"",
       "memory_overhead_mb":512
+    },
+    "llc_mj":{
+      "_params":"Mockingjay (REPL_MOCKINGJAY, 22) on the LLC as the external reference. At 4 MB / 16-way it derives 64 sampled sets of 4096 and a 12-bit signature (INF_RD 127 / INF_ETR 15 / MAX_RD 105) -- comfortably at its design point, so no --mockingjay_* overrides are needed or wanted.",
+      "params":"--l1_cache_repl_policy 22",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":64
     }
   },
   "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
