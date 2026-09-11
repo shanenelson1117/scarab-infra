@@ -1,0 +1,112 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"google",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"llc_marked_argmax_bypass",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. REQUIRES a build that carries the argmax / bypass / stream-buffer change: --marked_rrip_argmax_evict, --marked_rrip_age_period, --marked_rrip_bypass, --marked_rrip_bypass_ties, --marked_rrip_bypass_pref and --marked_rrip_stream_buf must all exist as params, and memory.stat.def must define L1_MARKED_BYPASS / L1_MARKED_SB_HIT / L1_MARKED_SB_EVICT / L1_MARKED_SB_EVICT_DIRTY. It must also carry everything google_combined_llc_2 requires: --td_combined_on_l1, the LLC duel (td_combined_l1_*), REPL_MOCKINGJAY, the TD_COMBINED_ON_L1 topdown measurement gates (without them every line inserts at basic and the whole depth ladder reads identically), and the PARAMS.google bp_l0_latency 0 / bp_main_latency 1 fix.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/shanen/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
+  "top_simpoint":false,
+  "_simulations":"Ablation of three independently toggleable changes to REPL_MARKED_RRIP on the LLC, on the google traces. (A) --marked_rrip_argmax_evict replaces the 'scan for reference_val == RRIP_DISTANT_VAL, then age the whole set and rescan' loop with argmax victim selection plus a single +1 aging pass per real eviction. (B) --marked_rrip_bypass declines a fill that would insert at BASIC into a set where every resident line already has a strictly lower RRPV -- such a line would be the immediate next victim. (C) --marked_rrip_stream_buf gives the cache a one-line buffer holding the last bypassed line, probed in parallel with the data array. Each arm layers exactly one knob on the one before it, so every pair is a one-variable delta.",
+  "simulations":[
+    {
+      "suite":"google",
+      "subsuite":"google",
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":"memtrace",
+      "warmup":null
+    }
+  ],
+  "_configurations":"BASE CONFIG: every td_ arm below is llc_depth_d32 from google_combined_llc_2 (both classes at -32, gates fe 0.7 / load 0.5, no extrapolation). If the sweep has since moved the best marked-RRIP LLC point, re-point ALL SEVEN td_ arms together -- the whole value of this descriptor is that they differ from each other by exactly one knob. Read llc_argmax against llc_marked_base FIRST: argmax is deliberately NOT a no-op (the top of a set floats in roughly [basic, basic+assoc] instead of being pinned at 4, which makes the hit promotion to RRPV 0 materially stronger), so a difference there is the expected result, not a bug. For the same reason, do not carry any td_*_rrip_min_rrpv depth conclusion from the old sweep across -- re-run the depth ladder on top of llc_argmax before trusting one. llc_tplru and llc_srrip are the usual untouched references: the change adds a new marked_rrip_update_evict and leaves srrip_update_evict (shared by SRRIP/BRRIP/DRRIP/SHIP) alone, so they must reproduce their old numbers exactly. CAUTION: --l1_cache_repl_policy is silently IGNORED whenever --td_combined_on_l1 is set (init_memory picks REPL_MARKED_RRIP first), so the ordinal appears only on repl_tplru / repl_srrip and must never be pasted onto a td_ config.",
+  "configurations":{
+    "llc_marked_base":{
+      "_params":"The base marked-RRIP config, all new knobs at their defaults (argmax off, bypass off, stream buffer off). Reproduces today's behaviour exactly; it is the anchor every arm below is a one-variable delta from.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -32",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "llc_argmax":{
+      "_params":"+ argmax victim selection with +1 aging per real eviction. The single most important comparison in this descriptor, and the one to read first. Expect movement: aging is now a fixed +1 rather than 'however far it is to 4', so the set's top value floats and a hit promoted to RRPV 0 survives roughly assoc (16) evictions instead of roughly 4.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -32 --marked_rrip_argmax_evict 1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+
+    "llc_argmax_bypass":{
+      "_params":"+ bypass, no stream buffer. The cleaner ablation of the two: a declined line is simply not cached, so L1_MARKED_BYPASS counts pure capacity given back. Prefetches are NOT bypassed here (--marked_rrip_bypass_pref defaults off).",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -32 --marked_rrip_argmax_evict 1 --marked_rrip_bypass 1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "llc_argmax_bypass_sb":{
+      "_params":"+ the one-line stream buffer. L1_MARKED_SB_HIT / L1_MARKED_BYPASS is the headline number: it says directly whether a single line of buffering recovers the reuse the bypass gave up. L1_MARKED_SB_EVICT_DIRTY should be small -- a line enters the buffer clean and can only be dirtied by a later write hit on it.",
+      "params":"--td_combined_on_l1 1 --td_fe_rrip_extrapolate 0 --td_load_rrip_extrapolate 0 --td_fe_rrip_thresh 0.7 --td_load_replay_thresh 0.5 --td_fe_rrip_min_rrpv -32 --td_load_rrip_min_rrpv -32 --marked_rrip_argmax_evict 1 --marked_rrip_bypass 1 --marked_rrip_stream_buf 1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"'IPC' is the TARGET-ONLY figure (Periodic_*), matching plot_stat_change_multi.py's default; pass --full-sim for the Cumulative_* figure. Note 'L1_*' is Scarab's LLC naming, not the L1 data cache (that is DCACHE_*). The two ONPATH splits are what make a combined policy readable -- the classes trade against each other for the same 16 ways, so L1_MISS_ONPATH_IFETCH vs L1_MISS_ONPATH_DFETCH says which side a config moved where the total cannot. MLC_DEMAND_MISS is a CONTROL: this experiment does not touch the L2, so a large swing there means something other than the LLC policy changed. L1_MARKED_BYPASS / L1_MARKED_SB_HIT are deliberately NOT plotted -- they are 0 for every arm with bypass off, so as a percent change they are a divide-by-zero. Read them from the CSV, and check that L1_MARKED_BYPASS is non-zero on the bypass arms before believing any bypass result. Per the repo convention, confirm full-run vs target-only scope before putting any of these counters in a ratio.",
+  "visualize":{
+    "baseline":"llc_marked_base",
+    "configs":[
+      "llc_tplru",
+      "llc_srrip",
+      "llc_marked_base",
+      "llc_argmax",
+      "llc_argmax_age4",
+      "llc_argmax_bypass",
+      "llc_argmax_bypass_ties",
+      "llc_argmax_bypass_pref",
+      "llc_argmax_bypass_sb"
+    ],
+    "counters":[
+      "IPC",
+      "L1_MISS_ONPATH_IFETCH",
+      "L1_MISS_ONPATH_DFETCH",
+      "MLC_DEMAND_MISS"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"llc_marked_base",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
