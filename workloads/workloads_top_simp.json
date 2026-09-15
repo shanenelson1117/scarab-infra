@@ -14,18 +14,18 @@
         },
         "simpoints":[
           {
-            "cluster_id":1013732,
+            "cluster_id":0,
             "segment_id":0,
             "weight":0.3333333333333333
           },
           {
-            "cluster_id":18313,
-            "segment_id":1,
+            "cluster_id":2,
+            "segment_id":2,
             "weight":0.3333333333333333
           },
           {
-            "cluster_id":356145,
-            "segment_id":2,
+            "cluster_id":5,
+            "segment_id":5,
             "weight":0.3333333333333333
           }
         ]
@@ -43,17 +43,17 @@
         },
         "simpoints":[
           {
-            "cluster_id":1630230,
+            "cluster_id":0,
             "segment_id":0,
             "weight":0.3333333333333333
           },
           {
-            "cluster_id":1632013,
+            "cluster_id":1,
             "segment_id":1,
             "weight":0.3333333333333333
           },
           {
-            "cluster_id":2760839,
+            "cluster_id":2,
             "segment_id":2,
             "weight":0.3333333333333333
           }
@@ -72,18 +72,18 @@
         },
         "simpoints":[
           {
-            "cluster_id":2294625,
-            "segment_id":0,
-            "weight":0.3333333333333333
-          },
-          {
-            "cluster_id":2294629,
+            "cluster_id":1,
             "segment_id":1,
             "weight":0.3333333333333333
           },
           {
-            "cluster_id":2294633,
-            "segment_id":2,
+            "cluster_id":5,
+            "segment_id":5,
+            "weight":0.3333333333333333
+          },
+          {
+            "cluster_id":17,
+            "segment_id":17,
             "weight":0.3333333333333333
           }
         ]
@@ -101,17 +101,17 @@
         },
         "simpoints":[
           {
-            "cluster_id":636293,
-            "segment_id":0,
+            "cluster_id":3,
+            "segment_id":3,
             "weight":0.3333333333333333
           },
           {
-            "cluster_id":636312,
+            "cluster_id":1,
             "segment_id":1,
             "weight":0.3333333333333333
           },
           {
-            "cluster_id":636343,
+            "cluster_id":2,
             "segment_id":2,
             "weight":0.3333333333333333
           }
@@ -130,18 +130,18 @@
         },
         "simpoints":[
           {
-            "cluster_id":3342967,
-            "segment_id":0,
+            "cluster_id":3,
+            "segment_id":3,
             "weight":0.3333333333333333
           },
           {
-            "cluster_id":3343074,
-            "segment_id":1,
+            "cluster_id":29,
+            "segment_id":29,
             "weight":0.3333333333333333
           },
           {
-            "cluster_id":3343075,
-            "segment_id":2,
+            "cluster_id":48,
+            "segment_id":48,
             "weight":0.3333333333333333
           }
         ]
@@ -159,18 +159,18 @@
         },
         "simpoints":[
           {
-            "cluster_id":1338450,
-            "segment_id":0,
-            "weight":0.3333333333333333
-          },
-          {
-            "cluster_id":1338451,
-            "segment_id":1,
-            "weight":0.3333333333333333
-          },
-          {
-            "cluster_id":1340815,
+            "cluster_id":2,
             "segment_id":2,
+            "weight":0.3333333333333333
+          },
+          {
+            "cluster_id":7,
+            "segment_id":7,
+            "weight":0.3333333333333333
+          },
+          {
+            "cluster_id":15,
+            "segment_id":15,
             "weight":0.3333333333333333
           }
         ]
@@ -188,18 +188,18 @@
         },
         "simpoints":[
           {
-            "cluster_id":100564,
-            "segment_id":0,
-            "weight":0.3333333333333333
-          },
-          {
-            "cluster_id":79694,
-            "segment_id":1,
-            "weight":0.3333333333333333
-          },
-          {
-            "cluster_id":84783,
+            "cluster_id":2,
             "segment_id":2,
+            "weight":0.3333333333333333
+          },
+          {
+            "cluster_id":5,
+            "segment_id":5,
+            "weight":0.3333333333333333
+          },
+          {
+            "cluster_id":21,
+            "segment_id":21,
             "weight":0.3333333333333333
           }
         ]
@@ -217,18 +217,18 @@
         },
         "simpoints":[
           {
-            "cluster_id":2376230,
+            "cluster_id":0,
             "segment_id":0,
             "weight":0.3333333333333333
           },
           {
-            "cluster_id":2376612,
-            "segment_id":1,
+            "cluster_id":6,
+            "segment_id":6,
             "weight":0.3333333333333333
           },
           {
-            "cluster_id":2376624,
-            "segment_id":2,
+            "cluster_id":7,
+            "segment_id":7,
             "weight":0.3333333333333333
           }
         ]
@@ -246,18 +246,18 @@
         },
         "simpoints":[
           {
-            "cluster_id":3397110,
-            "segment_id":0,
-            "weight":0.3333333333333333
-          },
-          {
-            "cluster_id":3397177,
+            "cluster_id":1,
             "segment_id":1,
             "weight":0.3333333333333333
           },
           {
-            "cluster_id":3397179,
-            "segment_id":2,
+            "cluster_id":5,
+            "segment_id":5,
+            "weight":0.3333333333333333
+          },
+          {
+            "cluster_id":36,
+            "segment_id":36,
             "weight":0.3333333333333333
           }
         ]
@@ -275,18 +275,18 @@
         },
         "simpoints":[
           {
-            "cluster_id":857951,
-            "segment_id":0,
+            "cluster_id":23,
+            "segment_id":23,
             "weight":0.3333333333333333
           },
           {
-            "cluster_id":862092,
-            "segment_id":1,
+            "cluster_id":42,
+            "segment_id":42,
             "weight":0.3333333333333333
           },
           {
-            "cluster_id":862093,
-            "segment_id":2,
+            "cluster_id":50,
+            "segment_id":50,
             "weight":0.3333333333333333
           }
         ]
@@ -304,19 +304,14 @@
         },
         "simpoints":[
           {
-            "cluster_id":3287020,
+            "cluster_id":0,
             "segment_id":0,
-            "weight":0.3333333333333333
+            "weight":0.5
           },
           {
-            "cluster_id":3287021,
+            "cluster_id":1,
             "segment_id":1,
-            "weight":0.3333333333333333
-          },
-          {
-            "cluster_id":3287022,
-            "segment_id":2,
-            "weight":0.3333333333333333
+            "weight":0.5
           }
         ]
       },
@@ -333,18 +328,18 @@
         },
         "simpoints":[
           {
-            "cluster_id":1292577,
-            "segment_id":0,
+            "cluster_id":45,
+            "segment_id":45,
             "weight":0.3333333333333333
           },
           {
-            "cluster_id":1293239,
-            "segment_id":1,
+            "cluster_id":46,
+            "segment_id":46,
             "weight":0.3333333333333333
           },
           {
-            "cluster_id":1293267,
-            "segment_id":2,
+            "cluster_id":65,
+            "segment_id":65,
             "weight":0.3333333333333333
           }
         ]
