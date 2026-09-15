@@ -1,0 +1,102 @@
+{
+  "_descriptor_type":"A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type":"simulation",
+  "_architecture":"A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture":"google",
+  "_experiment":"The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory. The folder will also contain all generated simulation statistics/outputs.",
+  "experiment":"marked_stats_sweep",
+  "_workload_manager":"manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager":"manual",
+  "_root_dir":"Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir":"/home/shanen/",
+  "_application_dir":"The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir":"/home/shanen/applications",
+  "_scarab_path":"The path to the scarab repository that contains the scarab binary used to run the experiment. REQUIRES a build carrying the membound/FE-bound accounting: --membound_stats and --membound_stats_roi must exist as params, and memory.stat.def must define the 16 L1_/MLC_ MEMBOUND_*/FEBOUND_* stats. If --membound_stats is rejected at init the build predates it; if it is accepted but every MEMBOUND_ stat reads 0, check that the build wired the bit into BOTH cache insert paths -- this machine's default replacement policy is REPL_TRUE_LRU (ordinal 0), which uses cache_insert_replpos, NOT the repl_policy_func_table strategy path.",
+  "scarab_path":"/home/shanen/samsung/scarab",
+  "_scarab_build":"scarab build mode. 'opt', 'dbg', or null",
+  "scarab_build":"opt",
+  "_traces_dir":"The local directory containing all simpointed traces",
+  "traces_dir":"/mnt/storage/traces/shanen/",
+  "_top_simpoint":"Run only top 3 simpoints stored in 'workloads_top_simp.json'.",
+  "top_simpoint":true,
+  "_simulations":"Cache CAPACITY sweep on the google traces, with the membound/FE-bound line accounting enabled in every arm. Two capacity moves, applied cumulatively: shrink the L2 (Scarab's MLC) from the PARAMS.google baseline of 2 MB to 512 KB, then grow the LLC (Scarab's l1_*) from 4 MB to 64 MB. The point of the pairing is that the two moves push in opposite directions: the smaller L2 sends more traffic down, the far larger LLC absorbs it, so the middle arm isolates the cost of losing L2 capacity and the third arm asks how much of that cost a very large LLC buys back. Associativity (16), line size (64 B), bank count and latencies are held FIXED across all three arms so capacity is the only variable; only --mlc_size and --l1_size move. Every arm keeps the default replacement policy (REPL_TRUE_LRU), so this measures capacity, not policy. NOTE the machine models NO TLB (perfect, zero misses, no page-walk traffic), which removes real competition for cache capacity -- a 64 MB LLC will look better here than it would with page-walk traffic present.",
+  "simulations":[
+    {
+      "suite":"google",
+      "subsuite":"google",
+      "workload":null,
+      "cluster_id":null,
+      "simulation_type":"memtrace",
+      "warmup":null
+    }
+  ],
+  "_configurations":"GEOMETRY. PARAMS.google baseline: MLC 2 MB / 16-way / 64 B (2048 sets), LLC 4 MB / 16-way / 64 B (4096 sets), L1D 48 KB, L1I 32 KB. Derived set counts for the sizes used here are 512 (512 KB MLC) and 65536 (64 MB LLC); both are powers of two, which is REQUIRED -- init_cache builds the index mask with LOG2(num_sets) and a non-power-of-two size silently produces a wrong mask rather than an error. Sizes are in BYTES: 524288 = 512 KB, 67108864 = 64 MB. ACCOUNTING: every arm sets --membound_stats 1 and --membound_stats_roi 1. The second is the default but is written explicitly so the descriptor does not silently change meaning if that default is ever flipped -- with it on, the counters start at the --full_warmup boundary and therefore share a window with Periodic_Instructions, which is the ONLY correct MPKI denominator for them. The accounting is policy-independent (the classification bit is stamped on every fill regardless of replacement policy), which is why it works here under the default REPL_TRUE_LRU with no policy flags at all.",
+  "configurations":{
+    "base":{
+      "_params":"PARAMS.google as shipped: MLC 2 MB, LLC 4 MB. Nothing but the accounting is enabled, so this is the reference both capacity arms are a delta from. --membound_stats is pure instrumentation and changes no simulated behaviour, so this arm must reproduce an ordinary PARAMS.google run exactly.",
+      "params":"--td_load_track_enable 1 --td_load_replay_thresh 0.5 --td_fe_rrip_thresh 0.7 --membound_stats 1 --membound_stats_roi 1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "l2_512kb":{
+      "_params":"L2 (MLC) shrunk 2 MB -> 512 KB, a 4x cut; 512 sets at the unchanged 16-way / 64 B. LLC left at the 4 MB baseline. One-variable delta from base: the expected reading is MLC_DEMAND_MISS up and more traffic reaching the LLC, so watch MLC_MEMBOUND_FILL climb and MLC_MEMBOUND_HIT fall.",
+      "params":"--td_load_track_enable 1 --mlc_size 524288 --td_load_replay_thresh 0.5 --td_fe_rrip_thresh 0.7 --membound_stats 1 --membound_stats_roi 1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":512
+    },
+    "l2_512kb_llc_64mb":{
+      "_params":"L2 still 512 KB, LLC grown 4 MB -> 64 MB (16x, 65536 sets at 16-way / 64 B). One-variable delta from l2_512kb, and the question is how much of the lost L2 capacity a very large LLC recovers. memory_overhead_mb is raised because the LLC array itself is ~1.05M lines; at roughly 160 B per line (Cache_Entry plus its L1_Data payload) that is ~160 MB of simulator memory on top of the normal footprint. 4096 MB is deliberately generous -- an OOM here wastes the whole sweep.",
+      "params":"--td_load_track_enable 1 --mlc_size 524288 --l1_size 67108864 --td_load_replay_thresh 0.5 --td_fe_rrip_thresh 0.7 --membound_stats 1 --membound_stats_roi 1",
+      "binary":"scarab_current",
+      "slurm_options":"",
+      "memory_overhead_mb":4096
+    }
+  },
+  "_collect_stats":"Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats":{
+    "configs":null
+  },
+  "_visualize":"'IPC' is the TARGET-ONLY figure (Periodic_*), matching plot_stat_change_multi.py's default; pass --full-sim for the Cumulative_* figure. Note 'L1_*' is Scarab's LLC naming, not the L1 data cache (that is DCACHE_*). The MEMBOUND counters are safe to plot as percent change HERE, unlike the marked-RRIP bypass stats, because --membound_stats is on in EVERY arm so the baseline is never zero and there is no divide-by-zero. Read them as a pair: *_FILL is how much membound traffic reached that level, *_HIT is how much of it was reused there. A capacity increase that raises *_HIT without raising *_FILL is the large LLC doing real work. CAUTION on ratios: these counters are ROI-scoped (--membound_stats_roi 1), so the only correct MPKI denominator is Periodic_Instructions -- pairing them with Cumulative_Instructions mixes windows, because under --full_warmup the Cumulative_* counters span warmup AND target. Also note *_FILL counts UNIQUE misses; accesses that merged into an in-flight miss are in *_MERGE_REQS, so total membound missing accesses = *_FILL + *_MERGE_REQS.",
+  "visualize":{
+    "baseline":"base",
+    "configs":[
+      "base",
+      "l2_512kb",
+      "l2_512kb_llc_64mb"
+    ],
+    "counters":[
+      "IPC",
+      "MLC_DEMAND_MISS",
+      "MLC_MEMBOUND_FILL",
+      "MLC_MEMBOUND_HIT",
+      "L1_MEMBOUND_FILL",
+      "L1_MEMBOUND_HIT",
+      "L1_MISS_ONPATH_DFETCH",
+      "L1_MISS_ONPATH_IFETCH"
+    ]
+  },
+  "_mem":"Memory scheduling and collection settings for Slurm jobs.",
+  "mem":{
+    "collection_baseline":null,
+    "fallback_mb":32768
+  },
+  "_perf_analyze":"Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze":{
+    "baseline":"base",
+    "counters":[
+      "IPC"
+    ],
+    "stat_groups":[
+      "core",
+      "memory"
+    ],
+    "compare_all_stats":false,
+    "drift_top_workloads":5,
+    "drift_top_simpoints":5,
+    "prompt_budget_tokens":12000,
+    "threshold_pct":2.0,
+    "analyzer_cli_cmd":"codex"
+  }
+}
