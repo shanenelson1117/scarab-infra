@@ -290,7 +290,22 @@ def file_lock(lock_path):
     fd = None
     for _ in range(50):
         try:
-            fd = os.open(lock_path, os.O_CREAT | os.O_RDWR)
+            # Open an existing lock file WITHOUT O_CREAT. /tmp is a
+            # world-writable sticky dir, and fs.protected_regular denies an
+            # O_CREAT open of an existing file owned by another user -- so
+            # passing O_CREAT unconditionally locks out every user except
+            # whoever created the file first (it is never unlinked).
+            try:
+                fd = os.open(lock_path, os.O_RDWR)
+            except FileNotFoundError:
+                # Create it world-read/writable so other users can share it.
+                # umask must be cleared: it would otherwise mask out the
+                # other-write bit and deny them the O_RDWR open above.
+                old_umask = os.umask(0)
+                try:
+                    fd = os.open(lock_path, os.O_CREAT | os.O_RDWR, 0o666)
+                finally:
+                    os.umask(old_umask)
             break
         except OSError as e:
             if e.errno == errno.EACCES:
