@@ -1,0 +1,212 @@
+{
+  "_descriptor_type": "A type of descriptor. One of 'simulation', 'trace', and 'perf'.",
+  "descriptor_type": "simulation",
+  "_architecture": "A name of the available architectures (PARAMS.<architecture>) found in scarab repository, which defines the machine parameters of the default configuration.",
+  "architecture": "google",
+  "_experiment": "The name of the experiment. scarab-infra will create a new folder named containing all files needed to execute the simulation in the <ROOT_DIR>/simulations/<experiment> directory.",
+  "experiment": "mj_path_sweep",
+  "_workload_manager": "manual: run each exp scenario with all the simpoints at a time, slurm: Slurm schedules simulations based on its policy",
+  "workload_manager": "manual",
+  "_root_dir": "Root directory mounted into the docker container home, for instance, the user's home directory",
+  "root_dir": "/home/mgiordan/",
+  "_application_dir": "The path to the benchmark application directory used for tracing or simulation.",
+  "application_dir": "/home/mgiordan/applications",
+  "_scarab_path": "The path to the scarab repository that contains the scarab binary used to run the experiment. MUST be on a branch that owns REPL_MOCKINGJAY (marked_rrip_revised). PARAMS.google already carries the bp_l0_latency 0 / bp_main_latency 1 fix that keeps bp.c:213 from asserting at init.",
+  "scarab_path": "/home/mgiordan/samsung/scarab_sn/",
+  "_scarab_build": "scarab build mode. 'opt', 'opt-avx', 'dbg', or null",
+  "scarab_build": "opt",
+  "_traces_dir": "The local directory containing all simpointed traces. Resolved as <traces_dir>/<suite>/<subsuite>/<workload>. shanen's google traces are world-readable and are bind-mounted read-only, so they are used in place rather than copied.",
+  "traces_dir": "/mnt/storage/traces/shanen/",
+  "_top_simpoint": "Run only the top 3 simpoints stored in 'workloads_top_simp.json'. TRUE here: 12 google workloads x 3 simpoints (whiskey has 2) = 35 sims per config. The full simpoint set is 359 per config, which this ablation does not need.",
+  "top_simpoint": 24,
+  "_simulations": "ArchAgent Policy61 on the L2 (MLC) over the google traces: 12 workloads x 3 top simpoints = 35 sims per config. PARAMS.google's L2 is 2MB / 16-way / 2048 sets, which derives the SAME Mockingjay/Policy61 sizing as the paper's single-core 2MB LLC (11-bit signature / 2048 RDP entries, 32 sampled sets), so the default arms carry no sizing overrides. POLICY61 IS IMPLEMENTED DIRECTLY as REPL_ARCHAGENT (ordinal 23) from the authors' mj.cc -> aa.cc conversion guide -- the `archagent` arm is the real policy, not a reconstruction. The path_* arms predate that guide and are Mockingjay variants, kept because they decompose questions Policy61 cannot answer on its own. PREFETCHING IS OFF (--pref_framework_on 0 in PARAMS.google, per its spec), so this corresponds to the paper's PREFETCH-DISABLED figure (Mockingjay -7.7% vs LRU, Policy61 +4.7%), and FLEXMIN never fires. The paper's result is a 4-core shared 8MiB LLC; ours is a single-core 2MB L2, so a sign match is the interesting outcome, not the magnitude.",
+  "simulations": [
+    {
+      "suite": "google",
+      "subsuite": "google",
+      "workload": null,
+      "cluster_id": null,
+      "simulation_type": "memtrace",
+      "warmup": null
+    }
+  ],
+  "_configurations": "HEADLINE (1-5): lru is what the paper normalizes to, plru is the realistic-hardware reference, mj_stock is the policy ArchAgent was seeded from, archagent is Policy61 itself, archagent_nohist strips its PC history to decompose the structural rewrite from the signature change, and archagent_nobypass ablates its allocation filter. With visualize.baseline = mj_stock, the archagent bar reads directly as the paper's central claim. MOCKINGJAY VARIANTS (6-18): these predate the conversion guide, when Policy61 had to be inferred from one published code excerpt. They are NOT reproductions -- archagent is -- but they remain the only way to isolate single changes, since Policy61 alters four things at once (RRPV for ETR, PC history, simplified bypass, no update on bypass). path_pc adds path context to Mockingjay alone (its own ablation family was cut once the conversion guide showed it is not a reproduction); the path_gh_* family tests the control-flow reading of the paper's prose with its own history-length axis. DIAGNOSTICS (19-20): a paired RDP-width probe, read only if the path arms lose. CROSS-BUILD COMPARISON IS NOT SAFE: adding any field to Mem_Req shifts every later heap allocation and perturbs results at the ~1e-7 level (verified). Compare only within this experiment. CAUTION --mlc_cache_repl_policy is silently IGNORED whenever --td_combined_on_mlc is set, so never paste those flags together. --mockingjay_bypass gates the allocation filter for BOTH policy 22 and policy 23; --mockingjay_path_* and --mockingjay_granularity apply only to 22; --archagent_pc_history applies only to 23.",
+  "configurations": {
+    "lru": {
+      "_params": "True LRU. The paper reports everything as % over LRU, so this is what makes our numbers commensurable with its Figure 7. Also the Scarab machine default.",
+      "params": "--mlc_cache_repl_policy 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 64
+    },
+    "plru": {
+      "_params": "Tree-PLRU: the realistic-hardware reference that true LRU flatters. If Mockingjay loses to LRU here, check it against this too -- no real L2 implements true LRU.",
+      "params": "--mlc_cache_repl_policy 21",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 64
+    },
+    "mj_stock": {
+      "_params": "Stock Mockingjay at its capacity-derived sizing: 11-bit signature (2048 RDP entries), 32 sampled sets, INF_RD 127 / INF_ETR 15 / MAX_RD 105. This 2MB/16-way L2 derives EXACTLY the sizing the paper's single-core 2MB LLC does, so this is the policy on its design point and no --mockingjay_* override is wanted. THE BASELINE for every path arm, and it must come from the same build -- see _configurations.",
+      "params": "--mlc_cache_repl_policy 22",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 64
+    },
+    "archagent": {
+      "_params": "ARCHAGENT POLICY61 ITSELF (REPL_ARCHAGENT, ordinal 23) -- implemented directly from the authors' mj.cc -> aa.cc conversion guide, not inferred. This is the arm the paper's claim lives on: it keeps Mockingjay's sampled cache, RDP, temporal-difference training, FLEXMIN and set sampling, and replaces the rest -- ETR and its aging clock become a 3-bit SRRIP RRPV, the signature is built from a per-core rotating PC history, the bypass rule drops to just 'predicted reuse > MAX_RD' and moves ahead of victim selection, and a bypassed access updates nothing at all. Sizing is the derived default, as ArchAgent ran it. READ THIS AGAINST mj_stock: 'does Policy61 beat the Mockingjay it was seeded from' is the paper's central claim, and with baseline=mj_stock this bar answers it directly.",
+      "params": "--mlc_cache_repl_policy 23",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 64
+    },
+    "archagent_nohist": {
+      "_params": "DECOMPOSITION ARM: Policy61 with its PC history switched off (--archagent_pc_history 0), so the signature reverts to Mockingjay's plain PC hash and the history register stops advancing. Everything else Policy61 changed stays: 3-bit SRRIP RRPV instead of ETR, the simplified bypass rule ahead of victim selection, and no replacement-state update on a bypassed access. READ AS A LADDER -- mj_stock -> archagent_nohist -> archagent. The first gap is what the structural rewrite buys on its own; the second is what the path history adds on top. This is the arm that tests the paper's own framing: it calls Policy61 'one critical change' to the signature, while the authors' conversion guide shows the structural edits are the larger part. Policy61 changes four things at once and cannot answer this by itself.",
+      "params": "--mlc_cache_repl_policy 23 --archagent_pc_history 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 64
+    },
+    "archagent_nobypass": {
+      "_params": "Policy61 with its allocation filter off. The same ablation mj_bypass_l2 ran against Mockingjay, where disabling bypass was worth +0.05% -- neutral -- despite firing millions of times. Policy61's bypass is a DIFFERENT mechanism though: a simpler predicate, evaluated before victim selection instead of after, and with no replacement-state update on the bypassed access. So the Mockingjay result does not carry over and this has to be measured separately. MLC_ARCHAGENT_BYPASS must read 0 here -- that is the check the flag took.",
+      "params": "--mlc_cache_repl_policy 23 --mockingjay_bypass 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 64
+    },
+    "path_pc": {
+      "_params": "NOT POLICY61 -- the archagent arm is that. Mockingjay (ETR intact) with an access-PC history folded into its signature: what the paper's single published code excerpt suggested before the authors' conversion guide arrived. It differs from the real policy in three ways -- it keeps ETR, keeps the full two-clause bypass rule, and folds the ROTATED register where Policy61 folds the un-rotated one. Kept as the Mockingjay-side counterpart to archagent_nohist: together they bracket the question from both directions, one adding path context to Mockingjay, the other removing it from Policy61. Its own ablation family (sync / rot0 / rot8 / onpath) was cut once the guide made clear this arm is not a reproduction; the equivalent ablations survive on the path_gh_* family, which is testing a live idea rather than a superseded guess.",
+      "params": "--mlc_cache_repl_policy 22 --mockingjay_path_signature 1",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 64
+    },
+    "path_gh": {
+      "_params": "Mockingjay with the core's 32-bit global BRANCH history folded into its signature instead of the access PC. NOT an interpretation of Policy61 -- the guide settles that question -- but the idea Policy61's PROSE describes ('the path taken to reach the current instruction', a memcpy calling-context example) and what the work it cites does (Chirp MICRO'20, Glider MICRO'19). ChampSim's policy interface could not reach a branch history; Scarab's can. Shaped like the PC arm for comparability: rotate 1, full history, derived RDP width. The other path_gh_* arms move one thing each off this point.",
+      "params": "--mlc_cache_repl_policy 22 --mockingjay_path_signature 2",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 64
+    },
+    "path_gh_sync": {
+      "_params": "Mode 2 with Policy61's lookup/update asymmetry REMOVED, so the bypass test consults the entry the fill actually trains. Same change path_pc_sync makes to mode 1; paired with it, this says whether the asymmetry matters differently for branch history than for PC history.",
+      "params": "--mlc_cache_repl_policy 22 --mockingjay_path_signature 2 --mockingjay_path_sync_lookup 1",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 64
+    },
+    "path_gh_onpath": {
+      "_params": "Mode 2 with wrong-path accesses excluded -- MUCH more pointed here than for mode 1. global_hist is updated SPECULATIVELY at predict time and rolled back on recovery (bp.c), so an off-path request carries a history that the machine is about to discard. For mode 1 off-path merely adds extra PCs; for mode 2 it folds in values that were never architecturally real. If any mode-2 arm is going to be rescued by a filter, this is the one.",
+      "params": "--mlc_cache_repl_policy 22 --mockingjay_path_signature 2 --mockingjay_path_onpath_only 1",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 64
+    },
+    "path_gh_rot0": {
+      "_params": "Mode 2 with rotation off. EXPECTED TO BE DEGENERATE, and that is the point of running it: global_hist moves one bit per conditional branch while the L2 sees many accesses between branches, so consecutive folds often carry the SAME ghist -- and XOR is self-inverse, so they cancel to nothing. If this collapses toward mj_stock it confirms that rotation is doing real work for mode 2, unlike mode 1 where rot0 and rot1 landed within 0.06%.",
+      "params": "--mlc_cache_repl_policy 22 --mockingjay_path_signature 2 --mockingjay_path_rotate 0",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 64
+    },
+    "path_gh_g16": {
+      "_params": "Mode 2 folding only the 16 most recent branch outcomes instead of 32. HISTORY LENGTH IS THE AXIS a control-flow predictor actually turns -- Chirp and Glider sweep it rather than fixing it. Shorter history distinguishes fewer contexts but gives each resulting signature more training samples.",
+      "params": "--mlc_cache_repl_policy 22 --mockingjay_path_signature 2 --mockingjay_path_ghist_bits 16",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 64
+    },
+    "path_gh_g8": {
+      "_params": "Mode 2 at 8 branches of history -- the short end of the length axis. With 32 and 16 this gives three points. Note short history makes repeated ghist values more likely, which is the same effect path_gh_rot0 isolates, so read the two together.",
+      "params": "--mlc_cache_repl_policy 22 --mockingjay_path_signature 2 --mockingjay_path_ghist_bits 8",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 64
+    },
+    "path_gh_best": {
+      "_params": "BEST-GUESS COMBINATION, and the only multi-variable arm in the sweep: self-consistent lookup, no speculative wrong-path history, 16 branches of context. A probe for 'is there a win anywhere in interpretation B', for the case where every single-variable arm is flat but the combination is not. Interpretable after the fact because all three of its components are present individually as path_gh_sync / path_gh_onpath / path_gh_g16.",
+      "params": "--mlc_cache_repl_policy 22 --mockingjay_path_signature 2 --mockingjay_path_sync_lookup 1 --mockingjay_path_onpath_only 1 --mockingjay_path_ghist_bits 16",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 64
+    },
+    "path_both": {
+      "_params": "INTERPRETATION C: access PC and branch history folded into one register, in case the prose and the code are both describing part of the intent.",
+      "params": "--mlc_cache_repl_policy 22 --mockingjay_path_signature 3",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 64
+    },
+    "mj_stock_s14": {
+      "_params": "PAIRED CONTROL for path_pc_s14 -- not a result on its own. Widening the RDP changes stock Mockingjay too, so without this arm any movement at s14 cannot be attributed to the path rather than to the table.",
+      "params": "--mlc_cache_repl_policy 22 --mockingjay_pc_signature_bits 14",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 64
+    },
+    "path_pc_s14": {
+      "_params": "DIAGNOSTIC, read only if path_pc loses. NOT a claim that 11 bits is undersized -- it is the design point for 2MB and the paper did not widen either. This tests TRAINING DILUTION: Policy61 splits one training stream across many more distinct signatures, and mj_temporal_difference moves an entry by at most +-1 per event (and not at all for deltas under 16), so entries that see few samples never converge. Interpret with care -- widening cuts both ways, reducing destructive interference but giving each entry fewer samples. If the path_pc_s14/mj_stock_s14 gap looks like the path_pc/mj_stock gap, dilution is not the story.",
+      "params": "--mlc_cache_repl_policy 22 --mockingjay_path_signature 1 --mockingjay_pc_signature_bits 14",
+      "binary": "scarab_current",
+      "slurm_options": "",
+      "memory_overhead_mb": 64
+    }
+  },
+  "_collect_stats": "Stats collection settings for ./sci --collect-stats. configs: optional list of configuration names to collect (null or omitted = all configurations).",
+  "collect_stats": {
+    "configs": null
+  },
+  "_visualize": "Baseline mj_stock, so each bar reads as 'what the path signature did to Mockingjay'. Flip it to 'lru' to reproduce the paper's Figure 7 framing. MLC_DEMAND_MISS is the steered quantity; the ONPATH splits say whether a change landed on the instruction or the data side, which the total cannot -- and these are instruction-heavy workloads, which is the paper's whole premise. MLC_ARCHAGENT_BYPASS is the same counter for policy 23 (the two are separate because the policies use different bypass rules and never run at once). MLC_MOCKINGJAY_BYPASS doubles as a training-health readout: the bypass test needs a VALID RDP entry, so a large drop under a path mode is evidence that signatures are being seen too few times to train (it fell ~16% under mode 1 in the whiskey smoke test). It is 0 by construction on the lru and plru arms. NOTE the machine has NO TLB (perfect, zero misses, no page-walk traffic), so L2 pressure is understated relative to real hardware -- see the caveat block in PARAMS.google.",
+  "visualize": {
+    "baseline": "mj_stock",
+    "configs": [
+      "lru",
+      "plru",
+      "mj_stock",
+      "archagent",
+      "archagent_nohist",
+      "archagent_nobypass",
+      "path_pc",
+      "path_gh",
+      "path_gh_sync",
+      "path_gh_onpath",
+      "path_gh_rot0",
+      "path_gh_g16",
+      "path_gh_g8",
+      "path_gh_best",
+      "path_both",
+      "mj_stock_s14",
+      "path_pc_s14"
+    ],
+    "counters": [
+      "IPC",
+      "MLC_DEMAND_MISS",
+      "MLC_MISS_ONPATH_IFETCH",
+      "MLC_MISS_ONPATH_DFETCH",
+      "MLC_MOCKINGJAY_BYPASS",
+      "MLC_ARCHAGENT_BYPASS"
+    ]
+  },
+  "_mem": "Memory scheduling and collection settings for Slurm jobs. Unused under workload_manager 'manual'.",
+  "mem": {
+    "collection_baseline": null,
+    "fallback_mb": 32768
+  },
+  "_perf_analyze": "Performance drift analysis settings for ./sci --perf-analyze.",
+  "perf_analyze": {
+    "baseline": "mj_stock",
+    "counters": [
+      "IPC"
+    ],
+    "stat_groups": [
+      "core",
+      "memory"
+    ],
+    "compare_all_stats": false,
+    "drift_top_workloads": 5,
+    "drift_top_simpoints": 5,
+    "prompt_budget_tokens": 12000,
+    "threshold_pct": 2.0,
+    "analyzer_cli_cmd": "codex"
+  }
+}
