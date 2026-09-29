@@ -141,7 +141,10 @@ def run_simulation(user, descriptor_data, workloads_data, infra_dir, descriptor_
     docker_prefix_list = get_image_list(simulations, workloads_data)
 
     available_cores = os.cpu_count()
-    max_processes = int(available_cores * 0.9)
+    # SCARAB_MAX_PROCS caps how many simulations run concurrently. Unset keeps the previous
+    # behaviour (90% of machine cores). Note os.cpu_count() is machine-wide and ignores CPU
+    # affinity, so taskset cannot be used for this.
+    max_processes = int(os.environ.get("SCARAB_MAX_PROCS") or available_cores * 0.9)
     processes = set()
     process_logs = {}
     tmp_files = []
@@ -381,7 +384,10 @@ def run_tracing(user, descriptor_data, workload_db_path, infra_dir, dbg_lvl = 2)
             docker_prefix_list.append(image_name)
 
     available_cores = os.cpu_count()
-    max_processes = int(available_cores * 0.9)
+    # SCARAB_MAX_PROCS caps how many simulations run concurrently. Unset keeps the previous
+    # behaviour (90% of machine cores). Note os.cpu_count() is machine-wide and ignores CPU
+    # affinity, so taskset cannot be used for this.
+    max_processes = int(os.environ.get("SCARAB_MAX_PROCS") or available_cores * 0.9)
     processes = set()
     tmp_files = []
     log_files = []
