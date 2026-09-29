@@ -40,6 +40,7 @@ from multiprocessing import shared_memory
 from pathlib import Path
 
 from scripts import utilities  # Descriptor parsing + simpoint metadata helpers
+import workloads.extract_top_simpoints as extract_top_simpoints
 from scripts.utilities import normalize_simulations
 
 def _cleanup_shared_memory(name: str) -> None:
@@ -817,9 +818,25 @@ class stat_aggregator:
         architecture = json_data["architecture"]
 
         infra_dir = _infra_root()
-        top_simpoint_only = bool(json_data["top_simpoint"])
-        workload_db_path = str(infra_dir / "workloads" / ("workloads_top_simp.json" if top_simpoint_only else "workloads_db.json"))
-        workloads_data = utilities.read_descriptor_from_json(workload_db_path)
+        # 'top_simpoint' mirrors run_simulation.py: false/null = every simpoint, true = the
+        # pre-generated top-3 file, <int N> = the first N per workload derived in memory from
+        # workloads_db.json. Collection MUST select exactly what the run selected or the
+        # columns will not line up with the directories on disk.
+        # NOTE bool is a subclass of int, so the bool check has to come first.
+        top_simpoint_cfg = json_data["top_simpoint"]
+        if isinstance(top_simpoint_cfg, bool) or top_simpoint_cfg is None:
+            top_simpoint_only = bool(top_simpoint_cfg)
+            workload_db_path = str(infra_dir / "workloads" / ("workloads_top_simp.json" if top_simpoint_only else "workloads_db.json"))
+            workloads_data = utilities.read_descriptor_from_json(workload_db_path)
+        else:
+            # An explicit N: start from the full db and trim, so top_simpoint_only stays False
+            # and any fallback re-read below still lands on workloads_db.json rather than the
+            # top-3 file, whose cluster_ids are a different set entirely.
+            top_simpoint_only = False
+            workload_db_path = str(infra_dir / "workloads" / "workloads_db.json")
+            workloads_data = utilities.read_descriptor_from_json(workload_db_path)
+            if workloads_data is not None:
+                extract_top_simpoints.modify_simpoints_in_place(workloads_data, int(top_simpoint_cfg))
         # ---------------------------------------------------------------------
         # Step 2: Expand the descriptor into a concrete list of simpoint tasks.
         #
@@ -853,7 +870,7 @@ class stat_aggregator:
                 elif found_workload != None:
                     assert found_suite is not None, "Suite cannot be None when workload is specified"
                     assert found_subsuite is not None, "Subsuite cannot be None when workload is specified"
-                    for cid in self.get_cluster_ids(found_workload, found_suite, found_subsuite, top_simpoint_only):
+                    for cid in self.get_cluster_ids(found_workload, found_suite, found_subsuite, top_simpoint_only, workloads_data=workloads_data):
                         tasks.append((config, found_suite, found_subsuite, found_workload, str(cid)))
 
                 elif found_subsuite != None:

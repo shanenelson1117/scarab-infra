@@ -29,6 +29,7 @@ from .utilities import (
     run_on_node,
 )
 from . import slurm_runner, local_runner
+import workloads.extract_top_simpoints as extract_top_simpoints
 
 client = docker.from_env()
 CONTAINER_PROBE_TIMEOUT_SECONDS = 5
@@ -73,6 +74,14 @@ def verify_descriptor(
 
     # Check if each simulation type is valid
     validate_simulation(workloads_data, descriptor_data['simulations'])
+
+    # Check the simpoint selection. bool is a subclass of int, so order matters here.
+    top_simpoint = descriptor_data.get("top_simpoint")
+    if not (top_simpoint is None or isinstance(top_simpoint, bool)):
+        if not isinstance(top_simpoint, int) or top_simpoint < 1:
+            err("'top_simpoint' must be true (top 3), false/null (all simpoints), or a positive "
+                f"integer N (the N heaviest per workload). Got: {top_simpoint!r}", dbg_lvl)
+            exit(1)
 
     # Check the workload manager
     if descriptor_data["workload_manager"] != "manual" and descriptor_data["workload_manager"] != "slurm":
@@ -425,8 +434,27 @@ def run_simulation_command(descriptor_path, action, dbg_lvl=2, infra_dir=None):
     if descriptor_data is None:
         raise RuntimeError(f"Failed to read descriptor {descriptor_path}")
 
-    workload_db_path = f"{infra_dir}/workloads/workloads_top_simp.json" if descriptor_data.get("top_simpoint") else f"{infra_dir}/workloads/workloads_db.json"
-    workloads_data = read_descriptor_from_json(workload_db_path, dbg_lvl)
+    # 'top_simpoint' selects how many simpoints per workload to simulate:
+    #   false / absent -> every simpoint, straight from workloads_db.json
+    #   true           -> the pre-generated top-3 file (unchanged legacy behaviour)
+    #   <int N>        -> the N heaviest simpoints per workload, derived in memory from
+    #                     workloads_db.json so no new file is written to the repo
+    # NOTE bool is a subclass of int in Python, so the bool check MUST come first or
+    # `true` would be read as N=1.
+    top_simpoint = descriptor_data.get("top_simpoint")
+    if isinstance(top_simpoint, bool) or top_simpoint is None:
+        workload_db_path = (f"{infra_dir}/workloads/workloads_top_simp.json" if top_simpoint
+                            else f"{infra_dir}/workloads/workloads_db.json")
+        workloads_data = read_descriptor_from_json(workload_db_path, dbg_lvl)
+    else:
+        workload_db_path = f"{infra_dir}/workloads/workloads_db.json"
+        workloads_data = read_descriptor_from_json(workload_db_path, dbg_lvl)
+        if workloads_data is not None:
+            # extract_top_simpoints renormalizes the kept weights to sum to 1, so a partial
+            # selection still weight-averages correctly in collected_stats.csv.
+            extract_top_simpoints.modify_simpoints_in_place(workloads_data, int(top_simpoint))
+            info(f"top_simpoint={int(top_simpoint)}: keeping the {int(top_simpoint)} heaviest "
+                 f"simpoints per workload", dbg_lvl)
     if workloads_data is None:
         raise RuntimeError("Failed to read workloads database")
 
