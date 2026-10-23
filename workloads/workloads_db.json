@@ -7,8 +7,8 @@
           "prioritized_mode":"memtrace",
           "memtrace":{
             "image_name":"allbench_traces",
-            "segment_size":50000000,
-            "warmup":10000000,
+            "segment_size":300000000,
+            "warmup":50000000,
             "trace_type":"capped_iterative_trace",
             "whole_trace_file":null
           }
@@ -69,8 +69,8 @@
           "prioritized_mode":"memtrace",
           "memtrace":{
             "image_name":"allbench_traces",
-            "segment_size":50000000,
-            "warmup":10000000,
+            "segment_size":300000000,
+            "warmup":50000000,
             "trace_type":"capped_iterative_trace",
             "whole_trace_file":null
           }
@@ -107,8 +107,8 @@
           "prioritized_mode":"memtrace",
           "memtrace":{
             "image_name":"allbench_traces",
-            "segment_size":50000000,
-            "warmup":10000000,
+            "segment_size":300000000,
+            "warmup":50000000,
             "trace_type":"capped_iterative_trace",
             "whole_trace_file":null
           }
@@ -297,8 +297,8 @@
           "prioritized_mode":"memtrace",
           "memtrace":{
             "image_name":"allbench_traces",
-            "segment_size":50000000,
-            "warmup":10000000,
+            "segment_size":300000000,
+            "warmup":50000000,
             "trace_type":"capped_iterative_trace",
             "whole_trace_file":null
           }
@@ -343,8 +343,8 @@
           "prioritized_mode":"memtrace",
           "memtrace":{
             "image_name":"allbench_traces",
-            "segment_size":50000000,
-            "warmup":10000000,
+            "segment_size":300000000,
+            "warmup":50000000,
             "trace_type":"capped_iterative_trace",
             "whole_trace_file":null
           }
@@ -1069,8 +1069,8 @@
           "prioritized_mode":"memtrace",
           "memtrace":{
             "image_name":"allbench_traces",
-            "segment_size":50000000,
-            "warmup":10000000,
+            "segment_size":300000000,
+            "warmup":50000000,
             "trace_type":"capped_iterative_trace",
             "whole_trace_file":null
           }
@@ -1219,8 +1219,8 @@
           "prioritized_mode":"memtrace",
           "memtrace":{
             "image_name":"allbench_traces",
-            "segment_size":50000000,
-            "warmup":10000000,
+            "segment_size":300000000,
+            "warmup":50000000,
             "trace_type":"capped_iterative_trace",
             "whole_trace_file":null
           }
@@ -1425,8 +1425,8 @@
           "prioritized_mode":"memtrace",
           "memtrace":{
             "image_name":"allbench_traces",
-            "segment_size":50000000,
-            "warmup":10000000,
+            "segment_size":300000000,
+            "warmup":50000000,
             "trace_type":"capped_iterative_trace",
             "whole_trace_file":null
           }
@@ -1583,8 +1583,8 @@
           "prioritized_mode":"memtrace",
           "memtrace":{
             "image_name":"allbench_traces",
-            "segment_size":50000000,
-            "warmup":10000000,
+            "segment_size":300000000,
+            "warmup":50000000,
             "trace_type":"capped_iterative_trace",
             "whole_trace_file":null
           }
@@ -1917,8 +1917,8 @@
           "prioritized_mode":"memtrace",
           "memtrace":{
             "image_name":"allbench_traces",
-            "segment_size":50000000,
-            "warmup":10000000,
+            "segment_size":300000000,
+            "warmup":50000000,
             "trace_type":"capped_iterative_trace",
             "whole_trace_file":null
           }
@@ -2339,8 +2339,8 @@
           "prioritized_mode":"memtrace",
           "memtrace":{
             "image_name":"allbench_traces",
-            "segment_size":50000000,
-            "warmup":10000000,
+            "segment_size":300000000,
+            "warmup":50000000,
             "trace_type":"capped_iterative_trace",
             "whole_trace_file":null
           }
@@ -2369,8 +2369,8 @@
           "prioritized_mode":"memtrace",
           "memtrace":{
             "image_name":"allbench_traces",
-            "segment_size":50000000,
-            "warmup":10000000,
+            "segment_size":300000000,
+            "warmup":50000000,
             "trace_type":"capped_iterative_trace",
             "whole_trace_file":null
           }
